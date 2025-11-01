@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,20 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 rchCommandList.Text += input + "\n";
                 rchCommandList.ScrollToCaret();
+            }
+        }
+        public void AutoCompleteCommand(TextBox txtCommandLine)
+        {
+            ArrayList CommandList = new ArrayList();
+            CommandList.Add("mkdir");
+            CommandList.Add("mkdir -p");
+            foreach (string s in CommandList)
+            {
+                if (s.Contains(txtCommandLine.Text))
+                {
+                    txtCommandLine.Text = s;
+                    break;
+                }
             }
         }
     }

@@ -102,17 +102,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 try
                 {
-                    ArrayList CommandList = new ArrayList();
-                    CommandList.Add("mkdir");
-                    CommandList.Add("mkdir -p");
-                    foreach (string s in CommandList)
-                    {
-                        if (s.Contains(txtCommandLine.Text))
-                        {
-                            txtCommandLine.Text = s;
-                            break;
-                        }
-                    }
+                    features.AutoCompleteCommand(txtCommandLine);
                 }
                 catch (Exception)
                 {
