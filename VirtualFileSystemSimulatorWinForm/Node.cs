@@ -9,13 +9,15 @@ namespace VirtualFileSystemSimulatorWinForm
     public abstract class Node
     {
         public string Name { get; set; }
-        public DateTime CreationTime { get; set; }
+        public string CreationTime { get; set; }
         public string Permissions { get; set; } // اختیاری: مانند "rwxr-xr--"
                                                 //توجه اگر خواستی که اجازه را تغییر بدی باید از ورودی ان را بگیری
         protected Node(string name)
         {
+            DateTime dateTime = DateTime.Now;
+
             Name = name;
-            CreationTime = DateTime.Now;
+            CreationTime = dateTime.ToString("yyyy-MM-dd HH:mm");
             Permissions = "rwxr-xr--"; // مقدار پیش‌فرض
         }
     }

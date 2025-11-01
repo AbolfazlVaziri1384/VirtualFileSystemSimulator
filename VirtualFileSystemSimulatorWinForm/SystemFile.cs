@@ -167,12 +167,13 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // پیاده‌سازی دستور touch
-        public void CreateFile(string path, DateTime? customTime = null)
+        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null )
         {
             if (string.IsNullOrEmpty(path))
-                throw new Exception("Path cannot be empty");
+                features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
 
             // جدا کردن مسیر به دایرکتوری والد و نام فایل
+            // برای مثال /user/ali/report.txt
             string directoryPath = GetDirectoryPath(path);
             string fileName = GetFileName(path);
 
@@ -191,14 +192,16 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 else
                 {
-                    throw new Exception($"'{directoryPath}' is not a directory");
+                    features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                    return;
                 }
             }
 
             // بررسی وجود فایل/دایرکتوری با همین نام
-            if (parentDir.FindChild(fileName) != null)
+            if (parentDir.FindChild(fileName.Split('.')[0]) != null)
             {
-                throw new Exception($"'{fileName}' already exists");
+                features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                return;
             }
 
             // ایجاد فایل جدید
@@ -206,12 +209,12 @@ namespace VirtualFileSystemSimulatorWinForm
             if (string.IsNullOrEmpty(fileExtension))
                 fileExtension = "txt";
 
-            var newFile = new File(fileName, fileExtension);
+            var newFile = new File(fileName.Split('.')[0], fileExtension);
 
             // تنظیم زمان در صورت وجود
-            if (customTime.HasValue)
+            if (!string.IsNullOrEmpty(customTime))
             {
-                newFile.CreationTime = customTime.Value;
+                newFile.CreationTime = customTime;
             }
 
             parentDir.AddChild(newFile);

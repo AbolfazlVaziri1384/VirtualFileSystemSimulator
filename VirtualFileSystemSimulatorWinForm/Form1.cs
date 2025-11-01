@@ -121,6 +121,13 @@ namespace VirtualFileSystemSimulatorWinForm
                     Mkdir_Command(InputArray, rchCommandList, TreeView);
                     UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
                     break;
+                case "touch":
+                    Touch_Command(InputArray, rchCommandList, TreeView);
+                    UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
+                    break;
+                default:
+                    features.AddToCommandList("Syntax Error", rchCommandList, false);
+                    break;
             }
 
             // ایجاد ساختار
@@ -154,6 +161,28 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     fs.CreateDirectory(Inputs[1], false, commandList);
+                }
+                UpdateTreeView(treeView);
+                //// منطق دستور mkdir
+                //AddToCommandList($"Directory '{Inputs[1]}' created", commandList);
+            }
+        }
+        public void Touch_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (Inputs.Length < 2)
+            {
+                features.AddToCommandList("Syntax Error", commandList, false);
+            }
+            else
+            {
+                if (Inputs[1] == "-t")
+                {
+                    string dateTime = Inputs[2] + " " + Inputs[3];
+                    fs.CreateFile(Inputs[4], commandList , dateTime);
+                }
+                else
+                {
+                    fs.CreateFile(Inputs[1], commandList);
                 }
                 UpdateTreeView(treeView);
                 //// منطق دستور mkdir

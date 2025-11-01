@@ -25,9 +25,12 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void AutoCompleteCommand(TextBox txtCommandLine)
         {
+            DateTime dateTime = DateTime.Now;
             ArrayList CommandList = new ArrayList();
             CommandList.Add("mkdir");
             CommandList.Add("mkdir -p");
+            CommandList.Add("touch");
+            CommandList.Add($"touch -t {dateTime:yyyy-MM-dd HH:mm}");
             foreach (string s in CommandList)
             {
                 if (s.Contains(txtCommandLine.Text))
