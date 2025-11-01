@@ -188,15 +188,18 @@ namespace VirtualFileSystemSimulatorWinForm
                 //// منطق دستور mkdir
                 //AddToCommandList($"Directory '{Inputs[1]}' created", commandList);
             }
+
         }
+
         public static void BuildTreeView(Directory directory, TreeNodeCollection nodes)
         {
             // ایجاد نود اصلی برای دایرکتوری فعلی
-            TreeNode currentNode = new TreeNode(directory.Name)
+            TreeNode currentNode = new TreeNode("📁 " + directory.Name)
             {
                 Tag = directory, // برای دسترسی بعدی به شیء اصلی
                 ImageKey = "📁", // اگر آیکون داری
-                SelectedImageKey = "📂"
+                SelectedImageKey = "📂",
+                ForeColor = Color.Blue
             };
 
             nodes.Add(currentNode);
@@ -214,11 +217,12 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     // اضافه کردن فایل‌ها
-                    TreeNode fileNode = new TreeNode(child.Name)
+                    TreeNode fileNode = new TreeNode("💾 " + child.Name)
                     {
                         Tag = child,
                         ImageKey = "💾",
-                        SelectedImageKey = "💾"
+                        SelectedImageKey = "💾",
+                        ForeColor = Color.Red
                     };
                     currentNode.Nodes.Add(fileNode);
                 }
