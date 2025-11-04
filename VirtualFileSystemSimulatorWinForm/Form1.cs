@@ -148,11 +148,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Mkdir_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (Inputs.Length < 2)
-            {
-                features.AddToCommandList("Syntax Error", commandList, false);
-            }
-            else
+            if(features.CheckLength(Inputs , 2 , 3 , rchCommandList))
             {
                 if (Inputs[1] == "-p")
                 {
@@ -169,11 +165,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Touch_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (Inputs.Length < 2)
-            {
-                features.AddToCommandList("Syntax Error", commandList, false);
-            }
-            else
+            if (features.CheckLength(Inputs, 2, 3, rchCommandList))
             {
                 if (Inputs[1] == "-t")
                 {

@@ -40,5 +40,14 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
             }
         }
+        public bool CheckLength(string[] input , int Down , int Up , RichTextBox rchCommandList)
+        {
+            if (input.Length < Down || input.Length > Up)
+            {
+                AddToCommandList("Syntax Error", rchCommandList, false);
+                return false;
+            }
+            return true;
+        }
     }
 }
