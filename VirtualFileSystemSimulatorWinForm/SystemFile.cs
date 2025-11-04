@@ -50,29 +50,15 @@ namespace VirtualFileSystemSimulatorWinForm
         // تابع جدید برای مدیریت مسیرهای حاوی .. و .
         private void NormalizePath(ref string path)
         {
-            var parts = path.Split('/').ToList();
-            string result = string.Empty;
-            bool IsFirst = true;
-            foreach (var part in parts)
+            if (path.StartsWith(".."))
             {
-                if (part == "..")
-                {
-                    //رفتن به یک سطح بالا تر
-                    CurrentDirectory = CurrentDirectory.Parent;
-                }
-                else if (part == ".")
-                {
-                    // نادیده بگیر - در جای خود بمان
-                }
-                else
-                {
-                    if (!IsFirst)
-                        result += "/";
-                    result = result + part;
-                    IsFirst = false;
-                }
+                CurrentDirectory = CurrentDirectory.Parent;
+                path = path.Substring(3);
             }
-            path = result;
+            else if (path.StartsWith("."))
+            {
+                path = path.Substring(2);
+            }
         }
         // پیاده‌سازی دستور mkdir
         public void CreateDirectory(string path, bool createParents, RichTextBox rchCommandLine)
