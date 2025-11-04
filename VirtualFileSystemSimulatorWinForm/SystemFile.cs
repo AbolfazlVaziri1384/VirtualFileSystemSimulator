@@ -48,28 +48,21 @@ namespace VirtualFileSystemSimulatorWinForm
             }
         }
         // تابع جدید برای مدیریت مسیرهای حاوی .. و .
-        private string NormalizePath(string path)
+        private void NormalizePath(ref string path)
         {
             var parts = path.Split('/').ToList();
             string result = string.Empty;
-            bool IsHasPoint = false;
             bool IsFirst = true;
             foreach (var part in parts)
             {
                 if (part == "..")
                 {
-                    // به یک سطح بالاتر برو
-                    //if (result.Count > 0)
-                    //    result.RemoveAt(result.Count - 1);
+                    //رفتن به یک سطح بالا تر
                     CurrentDirectory = CurrentDirectory.Parent;
-                    result = CurrentDirectory.Name + "/" + result;
-                    IsHasPoint = true;
                 }
                 else if (part == ".")
                 {
                     // نادیده بگیر - در جای خود بمان
-                    result = CurrentDirectory.Name + "/" + result;
-                    IsHasPoint = true;
                 }
                 else
                 {
@@ -79,18 +72,15 @@ namespace VirtualFileSystemSimulatorWinForm
                     IsFirst = false;
                 }
             }
-            if (IsHasPoint)
-                return "/" + result;
-            else
-                return path;
-
+            path = result;
         }
         // پیاده‌سازی دستور mkdir
         public void CreateDirectory(string path, bool createParents, RichTextBox rchCommandLine)
         {
             if (string.IsNullOrEmpty(path))
-                throw new Exception("Path cannot be empty");
-            path = NormalizePath(path);
+                features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
+
+            NormalizePath(ref path);
             // جدا کردن مسیر به بخش‌ها
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
 
@@ -167,7 +157,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // پیاده‌سازی دستور touch
-        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null )
+        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null)
         {
             if (string.IsNullOrEmpty(path))
                 features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
