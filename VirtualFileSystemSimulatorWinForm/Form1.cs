@@ -153,7 +153,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Mkdir_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if(features.CheckLength(Inputs , 2 , 3 , rchCommandList))
+            if (features.CheckLength(Inputs, 2, 3, rchCommandList))
             {
                 if (Inputs[1] == "-p")
                 {
@@ -175,7 +175,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (Inputs[1] == "-t")
                 {
                     string dateTime = Inputs[2] + " " + Inputs[3];
-                    fs.CreateFile(Inputs[4], commandList , dateTime);
+                    fs.CreateFile(Inputs[4], commandList, dateTime);
                 }
                 else
                 {
@@ -189,10 +189,22 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (features.CheckLength(Inputs, 1, 4, rchCommandList))
             {
-                if (Inputs.Length == 1)
-                {
-                    features.AddToCommandList(fs.LsShow(null), rchCommandList, false);     
-                }
+                bool MoreInfo = false;
+                bool ShowHidden = false;
+                string path = null;
+
+                if (Inputs.Contains("-l"))
+                    MoreInfo = true;
+                if (Inputs.Contains("-a"))
+                    ShowHidden = true;
+
+                foreach (string input in Inputs)
+                    if (input.StartsWith("/"))
+                        path = input;
+
+
+                features.AddToCommandList(fs.LsShow(rchCommandList , path , MoreInfo , ShowHidden), rchCommandList, false);
+
                 UpdateTreeView(treeView);
             }
 

@@ -172,21 +172,42 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
             }
-
-            // بررسی وجود فایل/دایرکتوری با همین نام
-            if (parentDir.FindChild(fileName.Split('.')[0]) != null)
+            if (!fileName.StartsWith("."))
             {
-                features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
-                return;
+                //برای فایل های قابل نمایش
+                // بررسی وجود فایل/دایرکتوری با همین نام
+                if (parentDir.FindChild(fileName.Split('.')[0]) != null)
+                {
+                    features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                    return;
+                }
+            }
+            else
+            {
+                //برای فایل های غیر قابل نمایش
+                // بررسی وجود فایل/دایرکتوری با همین نام
+                if (parentDir.FindChild(fileName.Split('.')[1]) != null)
+                {
+                    features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                    return;
+                }
             }
 
             // ایجاد فایل جدید
             string fileExtension = Path.GetExtension(fileName).TrimStart('.');
             if (string.IsNullOrEmpty(fileExtension))
                 fileExtension = "txt";
-
-            var newFile = new File(fileName.Split('.')[0], fileExtension);
-
+            File newFile;
+            if (!fileName.StartsWith("."))
+            {
+                //برای فایل های قابل نمایش
+                newFile = new File(fileName.Split('.')[0], fileExtension);
+            }
+            else
+            {
+                //برای فایل های غیر قابل نمایش
+                newFile = new File("." + fileName.Split('.')[1], fileExtension);
+            }
             // تنظیم زمان در صورت وجود
             if (!string.IsNullOrEmpty(customTime))
             {
@@ -199,6 +220,8 @@ namespace VirtualFileSystemSimulatorWinForm
         // تابع کمکی برای استخراج مسیر دایرکتوری از مسیر کامل
         private string GetDirectoryPath(string fullPath)
         {
+            if (fullPath == null)
+                return ".";
             if (fullPath.Contains('/'))
             {
                 int lastSlash = fullPath.LastIndexOf('/');
@@ -371,31 +394,73 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
             }
         }
-        public string LsShow(Directory Directory = null, bool moreInfo = false, bool ShowHidden = true)
+        public string LsShow(RichTextBox rchCommandLine, string Path = null, bool MoreInfo = false, bool ShowHidden = false)
         {
-            if (Directory == null)
+            string directoryPath = GetDirectoryPath(Path);
+
+            // پیدا کردن دایرکتوری والد
+            Directory parentDir;
+            if (directoryPath == ".")
             {
-                Directory = CurrentDirectory;
+                parentDir = CurrentDirectory;
+            }
+            else
+            {
+                var dirNode = ResolvePath(directoryPath);
+                if (dirNode is Directory directory)
+                {
+                    parentDir = directory;
+                }
+                else
+                {
+                    features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                    return null;
+                }
             }
             string FilesOrFolders = "";
-            // مرتب‌سازی کودکان برای نمایش مرتب‌تر
-            var sortedChildren = Directory.Children.OrderBy(c => c.Name).ToList();
+            // مرتب‌سازی فرزندان برای نمایش مرتب‌تر
+            var sortedChildren = parentDir.Children.OrderBy(c => c.Name).ToList();
 
             for (int i = 0; i < sortedChildren.Count; i++)
             {
                 var child = sortedChildren[i];
-                //برای نمایش ندادن موراد هیدن
-                if (!child.Name.StartsWith("."))
+                if (ShowHidden)
                 {
                     if (child is Directory dir)
                     {
-                        FilesOrFolders += child.Name + " ";
+                        if (MoreInfo)
+                            FilesOrFolders += child.CreationTime + "    " + child.Permissions + "    " + child.Name + "\n";
+                        else
+                            FilesOrFolders += child.Name + "    ";
                     }
                     else
                     {
 
                         File file = (File)child;
-                        FilesOrFolders += file.Name + "." + file.FileType + " ";
+                        if (MoreInfo)
+                            FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                        else
+                            FilesOrFolders += file.Name + "." + file.FileType + "    ";
+                    }
+
+                }
+                else if(!child.Name.StartsWith("."))
+                {
+                    if (child is Directory dir)
+                    {
+                        if (MoreInfo)
+                            FilesOrFolders += child.CreationTime + "    " + child.Permissions + "    " + child.Name + "\n";
+                        else
+                            FilesOrFolders += child.Name + "    ";
+                    }
+                    else
+                    {
+
+                        File file = (File)child;
+                        if (MoreInfo)
+                            FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                        else
+                            FilesOrFolders += file.Name + "." + file.FileType + "    ";
                     }
 
                 }
