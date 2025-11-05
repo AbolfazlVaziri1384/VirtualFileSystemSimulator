@@ -65,8 +65,8 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (string.IsNullOrEmpty(path))
                 features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
-
-            NormalizePath(ref path);
+            if (createParents)
+                NormalizePath(ref path);
             // جدا کردن مسیر به بخش‌ها
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
 
@@ -370,6 +370,45 @@ namespace VirtualFileSystemSimulatorWinForm
                     Console.ResetColor();
                 }
             }
+        }
+        public string LsShow(Directory Directory = null, bool moreInfo = false, bool ShowHidden = true)
+        {
+            if (Directory == null)
+            {
+                Directory = CurrentDirectory;
+            }
+            string FilesOrFolders = "";
+            // مرتب‌سازی کودکان برای نمایش مرتب‌تر
+            var sortedChildren = Directory.Children.OrderBy(c => c.Name).ToList();
+
+            for (int i = 0; i < sortedChildren.Count; i++)
+            {
+                var child = sortedChildren[i];
+                //برای نمایش ندادن موراد هیدن
+                if (!child.Name.StartsWith("."))
+                {
+                    if (child is Directory dir)
+                    {
+                        FilesOrFolders += child.Name + " ";
+                    }
+                    else
+                    {
+
+                        File file = (File)child;
+                        FilesOrFolders += file.Name + "." + file.FileType + " ";
+                    }
+
+                }
+            }
+            return FilesOrFolders;
+        }
+        public void Cd(string path = null)
+        {
+            if (path == "..")
+            {
+                CurrentDirectory = CurrentDirectory.Parent;
+            }
+
         }
 
     }

@@ -119,16 +119,21 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 case "mkdir":
                     Mkdir_Command(InputArray, rchCommandList, TreeView);
-                    UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
                     break;
                 case "touch":
                     Touch_Command(InputArray, rchCommandList, TreeView);
-                    UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
+                    break;
+                case "ls":
+                    Ls_Command(InputArray, rchCommandList, TreeView);
+                    break;
+                case "cd":
+                    Cd_Command(InputArray, rchCommandList, TreeView);
                     break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
             }
+            UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
 
             // ایجاد ساختار
             //fs.CreateDirectory("/home");
@@ -140,7 +145,7 @@ namespace VirtualFileSystemSimulatorWinForm
             //fs.PrintTree(fs.Root);
         }
 
-        
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -177,8 +182,30 @@ namespace VirtualFileSystemSimulatorWinForm
                     fs.CreateFile(Inputs[1], commandList);
                 }
                 UpdateTreeView(treeView);
-                //// منطق دستور mkdir
-                //AddToCommandList($"Directory '{Inputs[1]}' created", commandList);
+            }
+
+        }
+        public void Ls_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 1, 4, rchCommandList))
+            {
+                if (Inputs.Length == 1)
+                {
+                    features.AddToCommandList(fs.LsShow(null), rchCommandList, false);     
+                }
+                UpdateTreeView(treeView);
+            }
+
+        }
+        public void Cd_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 1, 2, rchCommandList))
+            {
+                if (Inputs.Length == 2)
+                {
+                    fs.Cd(Inputs[1]);
+                }
+                UpdateTreeView(treeView);
             }
 
         }
@@ -193,9 +220,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 SelectedImageKey = "📂",
                 ForeColor = Color.Blue
             };
-
-            nodes.Add(currentNode);
-
+            //برای نمایش ندادن موراد هیدن
+            if (!currentNode.Text.StartsWith("📁 ."))
+            {
+                nodes.Add(currentNode);
+            }
             // مرتب‌سازی برای نمایش منظم‌تر
             var sortedChildren = directory.Children.OrderBy(c => c.Name).ToList();
 
@@ -216,7 +245,11 @@ namespace VirtualFileSystemSimulatorWinForm
                         SelectedImageKey = "💾",
                         ForeColor = Color.Red
                     };
-                    currentNode.Nodes.Add(fileNode);
+                    //برای نمایش ندادن موراد هیدن
+                    if (!fileNode.Text.StartsWith("💾 ."))
+                    {
+                        currentNode.Nodes.Add(fileNode);
+                    }
                 }
             }
         }

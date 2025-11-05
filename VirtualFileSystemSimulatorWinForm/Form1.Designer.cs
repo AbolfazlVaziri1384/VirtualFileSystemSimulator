@@ -39,6 +39,8 @@
             // 
             // rchCommandList
             // 
+            this.rchCommandList.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.rchCommandList.ForeColor = System.Drawing.SystemColors.Window;
             this.rchCommandList.Location = new System.Drawing.Point(439, 49);
             this.rchCommandList.Margin = new System.Windows.Forms.Padding(4);
             this.rchCommandList.Name = "rchCommandList";
