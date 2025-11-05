@@ -396,24 +396,23 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public string LsShow(RichTextBox rchCommandLine, string Path = null, bool MoreInfo = false, bool ShowHidden = false)
         {
-            string directoryPath = GetDirectoryPath(Path);
 
             // پیدا کردن دایرکتوری والد
             Directory parentDir;
-            if (directoryPath == ".")
+            if (Path == null)
             {
                 parentDir = CurrentDirectory;
             }
             else
             {
-                var dirNode = ResolvePath(directoryPath);
+                var dirNode = ResolvePath(Path);
                 if (dirNode is Directory directory)
                 {
                     parentDir = directory;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                    features.AddToCommandList($"'{Path}' is not a directory", rchCommandLine, false);
                     return null;
                 }
             }
