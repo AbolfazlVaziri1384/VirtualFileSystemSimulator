@@ -199,11 +199,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     ShowHidden = true;
 
                 foreach (string input in Inputs)
-                    if (input.StartsWith("/"))
+                    if (input.Contains("/"))
                         path = input;
 
 
-                features.AddToCommandList(fs.LsShow(rchCommandList , path , MoreInfo , ShowHidden), rchCommandList, false);
+                features.AddToCommandList(fs.LsShow(rchCommandList, path, MoreInfo, ShowHidden), rchCommandList, false);
 
                 UpdateTreeView(treeView);
             }
@@ -215,10 +215,15 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Inputs.Length == 2)
                 {
-                    fs.Cd(Inputs[1]);
+                    fs.Cd(rchCommandList, Inputs[1]);
                 }
-                UpdateTreeView(treeView);
+                else
+                {
+                    //رفتن به ROOT
+                    fs.Cd(rchCommandList);
+                }
             }
+            UpdateTreeView(treeView);
 
         }
 

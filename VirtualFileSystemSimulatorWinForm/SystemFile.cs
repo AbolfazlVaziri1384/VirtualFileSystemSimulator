@@ -22,7 +22,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // پیاده‌سازی دستور cd
-        public void ChangeDirectory(string path)
+        public void ChangeDirectory(string path, RichTextBox rchCommandLine)
         {
             if (string.IsNullOrEmpty(path) || path == "/")
             {
@@ -37,14 +37,14 @@ namespace VirtualFileSystemSimulatorWinForm
                 return;
             }
 
-            var target = ResolvePath(path);
+            var target = ResolvePath(path, rchCommandLine);
             if (target is Directory directory)
             {
                 CurrentDirectory = directory;
             }
             else
             {
-                throw new Exception($"'{path}' is not a directory");
+                features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
             }
         }
         // تابع جدید برای مدیریت مسیرهای حاوی .. و .
@@ -52,7 +52,8 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (path.StartsWith(".."))
             {
-                CurrentDirectory = CurrentDirectory.Parent;
+                if (CurrentDirectory.Parent != null)
+                    CurrentDirectory = CurrentDirectory.Parent;
                 path = path.Substring(3);
             }
             else if (path.StartsWith("."))
@@ -161,7 +162,7 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             else
             {
-                var dirNode = ResolvePath(directoryPath);
+                var dirNode = ResolvePath(directoryPath, rchCommandLine);
                 if (dirNode is Directory directory)
                 {
                     parentDir = directory;
@@ -248,21 +249,21 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // تابع کمکی برای حل مسیر
-        private Node ResolvePath(string path)
+        private Node ResolvePath(string path, RichTextBox rchCommandLine)
         {
             if (path.StartsWith("/"))
             {
                 // مسیر مطلق - از ریشه شروع کن
-                return ResolveAbsolutePath(path);
+                return ResolveAbsolutePath(path, rchCommandLine);
             }
             else
             {
                 // مسیر نسبی - از دایرکتوری جاری شروع کن
-                return ResolveRelativePath(path);
+                return ResolveRelativePath(path, rchCommandLine);
             }
         }
 
-        private Node ResolveAbsolutePath(string path)
+        private Node ResolveAbsolutePath(string path, RichTextBox rchCommandLine)
         {
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
             var current = Root;
@@ -290,14 +291,14 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 else
                 {
-                    throw new Exception($"Path not found: {path}");
+                    features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
                 }
             }
 
             return current;
         }
 
-        private Node ResolveRelativePath(string path)
+        private Node ResolveRelativePath(string path, RichTextBox rchCommandLine)
         {
             // مشابه بالا اما از CurrentDirectory شروع می‌کند
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
@@ -327,7 +328,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 else
                 {
-                    throw new Exception($"Path not found: {path}");
+                    features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
                 }
             }
             return current;
@@ -405,7 +406,7 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             else
             {
-                var dirNode = ResolvePath(Path);
+                var dirNode = ResolvePath(Path, rchCommandLine);
                 if (dirNode is Directory directory)
                 {
                     parentDir = directory;
@@ -443,7 +444,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
 
                 }
-                else if(!child.Name.StartsWith("."))
+                else if (!child.Name.StartsWith("."))
                 {
                     if (child is Directory dir)
                     {
@@ -466,13 +467,36 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             return FilesOrFolders;
         }
-        public void Cd(string path = null)
+        public void Cd(RichTextBox rchCommandLine, string path = null)
         {
             if (path == "..")
             {
                 CurrentDirectory = CurrentDirectory.Parent;
             }
-
+            else if (path == null)
+            {
+                CurrentDirectory = Root;
+            }
+            else
+            {
+                Directory parentDir;
+                if (path == null)
+                {
+                    parentDir = CurrentDirectory;
+                }
+                else
+                {
+                    var dirNode = ResolvePath(path, rchCommandLine);
+                    if (dirNode is Directory directory)
+                    {
+                        CurrentDirectory = directory;
+                    }
+                    else
+                    {
+                        features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
+                    }
+                }
+            }
         }
 
     }
