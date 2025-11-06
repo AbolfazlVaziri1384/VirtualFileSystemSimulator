@@ -498,6 +498,32 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
             }
         }
+        public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
+        {
+            if (currentDirectory == null)
+                return ;
+
+            try
+            {
+                // ساخت مسیر از دایرکتوری جاری تا ریشه
+                var pathStack = new Stack<string>();
+                Directory temp = currentDirectory;
+
+                while (temp != null && temp.Name != "/")
+                {
+                    pathStack.Push(temp.Name);
+                    temp = temp.Parent;
+                }
+
+                // ترکیب بخش‌های مسیر
+                string fullPath = "/" + string.Join("/", pathStack);
+                features.AddToCommandList(fullPath, rchCommandLine, false);
+            }
+            catch (Exception ex)
+            {
+                features.AddToCommandList($"Error updating current route: {ex.Message}", rchCommandLine, false);
+            }
+        }
 
     }
 

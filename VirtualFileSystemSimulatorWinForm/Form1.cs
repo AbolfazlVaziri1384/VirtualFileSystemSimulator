@@ -129,6 +129,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "cd":
                     Cd_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "pwd":
+                    Pwd_Command(InputArray, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -222,6 +225,15 @@ namespace VirtualFileSystemSimulatorWinForm
                     //رفتن به ROOT
                     fs.Cd(rchCommandList);
                 }
+            }
+            UpdateTreeView(treeView);
+
+        }
+        public void Pwd_Command(string[] Inputs, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 1, 1, rchCommandList))
+            {
+                fs.Pwd(fs.CurrentDirectory , rchCommandList);
             }
             UpdateTreeView(treeView);
 
