@@ -498,10 +498,113 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
             }
         }
+        public void Rm(RichTextBox rchCommandLine, string Name, bool IsRecursive, bool IsForce)
+        {
+            var dirNode = CurrentDirectory.FindChild(Name);
+            if (dirNode != null)
+            {
+                if (dirNode is Directory directory)
+                {
+                    // اگر دایرکتوری باشد
+                    if (directory.HasChild())
+                    {
+                        if (IsRecursive)
+                        {
+                            if (IsForce)
+                            {
+                                CurrentDirectory.RemoveChild(Name);
+                            }
+                            else
+                            {
+                                // پرسش از کاربر برای تأیید حذف
+                                DialogResult result = MessageBox.Show($"Are you sure you want to remove directory '{Name}' and all its contents?",
+                                    "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                                if (result == DialogResult.Yes)
+                                {
+                                    CurrentDirectory.RemoveChild(Name);
+                                }
+                                else
+                                {
+                                    features.AddToCommandList($"Deletion of directory '{Name}' cancelled.", rchCommandLine, false);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            features.AddToCommandList($"Directory '{Name}' has File or Folder; Please use -r in your command", rchCommandLine, false);
+                        }
+                    }
+                    else
+                    {
+                        // دایرکتوری خالی است
+                        if (IsForce)
+                        {
+                            CurrentDirectory.RemoveChild(Name);
+                        }
+                        else
+                        {
+                            // پرسش از کاربر برای تأیید حذف دایرکتوری خالی
+                            DialogResult result = MessageBox.Show($"Are you sure you want to remove directory '{Name}'?",
+                                "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                            if (result == DialogResult.Yes)
+                            {
+                                CurrentDirectory.RemoveChild(Name);
+                            }
+                            else
+                            {
+                                features.AddToCommandList($"Deletion of directory '{Name}' cancelled.", rchCommandLine, false);
+                            }
+                        }
+                    }
+                    return;
+                }
+                else
+                {
+                    // اگر فایل باشد
+                    if (!Name.StartsWith("."))
+                    {
+                        if (Name.Contains("."))
+                            Name = Name.Split('.')[0];
+                    }
+                    else
+                    {
+                        if (Name.Contains("."))
+                            Name = "." + Name.Split('.')[1];
+                    }
+
+                    if (IsForce)
+                    {
+                        CurrentDirectory.RemoveChild(Name);
+                    }
+                    else
+                    {
+                        // پرسش از کاربر برای تأیید حذف فایل
+                        DialogResult result = MessageBox.Show($"Are you sure you want to remove file '{Name}'?",
+                            "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                        if (result == DialogResult.Yes)
+                        {
+                            CurrentDirectory.RemoveChild(Name);
+                        }
+                        else
+                        {
+                            features.AddToCommandList($"Deletion of file '{Name}' cancelled.", rchCommandLine, false);
+                        }
+                    }
+                    return;
+                }
+            }
+            else
+            {
+                features.AddToCommandList($"'{Name}' is not found", rchCommandLine, false);
+            }
+        }
         public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
         {
             if (currentDirectory == null)
-                return ;
+                return;
 
             try
             {

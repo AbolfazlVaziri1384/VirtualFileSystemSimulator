@@ -132,6 +132,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "pwd":
                     Pwd_Command(InputArray, TreeView);
                     break;
+                case "rm":
+                    Rm_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -229,11 +232,29 @@ namespace VirtualFileSystemSimulatorWinForm
             UpdateTreeView(treeView);
 
         }
+        public void Rm_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 2, 4, rchCommandList))
+            {
+                bool IsRecursive = false;
+                bool IsForce = false;
+                string Name;
+
+                if (Inputs.Contains("-r"))
+                    IsRecursive = true;
+                if (Inputs.Contains("-f"))
+                    IsForce = true;
+                Name = Inputs[Inputs.Length - 1];
+                fs.Rm(rchCommandList, Name , IsRecursive , IsForce);
+            }
+            UpdateTreeView(treeView);
+
+        }
         public void Pwd_Command(string[] Inputs, System.Windows.Forms.TreeView treeView)
         {
             if (features.CheckLength(Inputs, 1, 1, rchCommandList))
             {
-                fs.Pwd(fs.CurrentDirectory , rchCommandList);
+                fs.Pwd(fs.CurrentDirectory, rchCommandList);
             }
             UpdateTreeView(treeView);
 

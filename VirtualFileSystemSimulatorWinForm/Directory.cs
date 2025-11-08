@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using static VirtualFileSystemSimulatorWinForm.Form1;
 
 namespace VirtualFileSystemSimulatorWinForm
@@ -28,6 +29,11 @@ namespace VirtualFileSystemSimulatorWinForm
         public Node FindChild(string name)
         {
             return Children.FirstOrDefault(child => child.Name == name);
+        }
+        // آیا فرزندی دارد؟
+        public bool HasChild()
+        {
+            return Children.Count != 0;
         }
 
         // حذف فرزند
