@@ -135,6 +135,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "rm":
                     Rm_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "usertype":
+                    Usertype_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -240,12 +243,53 @@ namespace VirtualFileSystemSimulatorWinForm
                 bool IsForce = false;
                 string Name;
 
-                if (Inputs.Contains("-r"))
+                if (Inputs.Contains("-rf"))
+                {
                     IsRecursive = true;
-                if (Inputs.Contains("-f"))
                     IsForce = true;
+                }
+                else
+                {
+                    if (Inputs.Contains("-r"))
+                        IsRecursive = true;
+                    if (Inputs.Contains("-f"))
+                        IsForce = true;
+                }
                 Name = Inputs[Inputs.Length - 1];
-                fs.Rm(rchCommandList, Name , IsRecursive , IsForce);
+                fs.Rm(rchCommandList, Name, IsRecursive, IsForce);
+            }
+            UpdateTreeView(treeView);
+
+        }
+        public void Usertype_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 1, 2, rchCommandList))
+            {
+                if (Inputs.Length == 1)
+                {
+                    features.AddToCommandList(fs.ShowUserType().ToString(), rchCommandList, false);
+                }
+                else
+                {
+                    switch (Inputs[1])
+                    {
+                        case "owner":
+                            fs.ChangeUserType(SystemFile.UserType.owner);
+                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            break;
+                        case "group":
+                            fs.ChangeUserType(SystemFile.UserType.group);
+                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            break;
+                        case "others":
+                            fs.ChangeUserType(SystemFile.UserType.others);
+                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            break;
+                        default:
+                            features.AddToCommandList("Not found your user type", rchCommandList, false);
+                            break;
+                    }
+                }
             }
             UpdateTreeView(treeView);
 

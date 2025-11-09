@@ -14,13 +14,22 @@ namespace VirtualFileSystemSimulatorWinForm
         public Directory Root { get; private set; }
         public Directory CurrentDirectory { get; private set; }
         public Features features = new Features();
+        public UserType _UserType = UserType.owner;
 
         public SystemFile()
         {
             Root = new Directory("/");
             CurrentDirectory = Root;
         }
-
+        public enum UserType { owner, group, others }
+        public void ChangeUserType(UserType userType)
+        {
+            _UserType = userType;
+        }
+        public UserType ShowUserType()
+        {
+            return _UserType;
+        }
         // پیاده‌سازی دستور cd
         public void ChangeDirectory(string path, RichTextBox rchCommandLine)
         {
@@ -471,7 +480,8 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (path == "..")
             {
-                CurrentDirectory = CurrentDirectory.Parent;
+                if (CurrentDirectory.Parent != null)
+                    CurrentDirectory = CurrentDirectory.Parent;
             }
             else if (path == null)
             {
@@ -503,8 +513,18 @@ namespace VirtualFileSystemSimulatorWinForm
             var dirNode = CurrentDirectory.FindChild(Name);
             if (dirNode != null)
             {
+                if (!IsDeleteable(dirNode))
+                {
+                    features.AddToCommandList($"Permission denied: Cannot delete '{Name}'", rchCommandLine, false);
+                    return;
+                }
                 if (dirNode is Directory directory)
                 {
+                    if (directory.Parent == null)
+                    {
+                        features.AddToCommandList("You can not delete root!", rchCommandLine, false);
+                        return;
+                    }
                     // اگر دایرکتوری باشد
                     if (directory.HasChild())
                     {
@@ -600,6 +620,27 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 features.AddToCommandList($"'{Name}' is not found", rchCommandLine, false);
             }
+        }
+        public bool IsDeleteable(Node node)
+        {
+            switch (_UserType)
+            {
+                case UserType.owner:
+                    if (node.Permissions[1] == 'w')
+                        return true;
+                    break;
+                case UserType.group:
+                    if (node.Permissions[4] == 'w')
+                        return true;
+                    break;
+                case UserType.others:
+                    if (node.Permissions[7] == 'w')
+                        return true;
+                    break;
+                default:
+                    break;
+            }
+            return false;
         }
         public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
         {
