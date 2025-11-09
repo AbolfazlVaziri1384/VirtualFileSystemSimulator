@@ -367,19 +367,54 @@ namespace VirtualFileSystemSimulatorWinForm
         //    }
         //}
 
-        public void PrintTree(Directory directory, string indent = "", bool isLast = true)
+        public string Tree(RichTextBox rchCommandLine, string path = null, Directory dir = null,
+                  string indent = "", bool isLast = true, int? maxDepth = null, int currentDepth = 0)
         {
-            // تنظیم رنگ برای دایرکتوری‌ها
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Directory targetDir = dir;
 
-            Console.Write(indent);
-            Console.Write(isLast ? "└── " : "├── ");
-            Console.WriteLine(directory.Name);
+            if (path != null)
+            {
+                var dirNode = ResolvePath(path, rchCommandLine);
+                if (dirNode is Directory directoryFromPath)
+                {
+                    targetDir = directoryFromPath;
+                }
+                else
+                {
+                    features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
+                    return string.Empty;
+                }
+            }
+            else if (targetDir == null)
+            {
+                targetDir = CurrentDirectory;
+            }
 
-            Console.ResetColor();
+            if (targetDir == null)
+            {
+                return string.Empty;
+            }
 
-            // مرتب‌سازی کودکان برای نمایش مرتب‌تر
-            var sortedChildren = directory.Children.OrderBy(c => c.Name).ToList();
+            // بررسی اگر به حداکثر عمق مجاز رسیده باشیم
+            if (maxDepth.HasValue && currentDepth > maxDepth.Value)
+            {
+                return string.Empty;
+            }
+
+            string tree = string.Empty;
+
+            tree += indent;
+            tree += isLast ? "└── " : "├── ";
+            tree += targetDir.Name + "\n";
+
+            // اگر به عمق مجاز رسیده باشیم، فرزندان را نمایش ندهیم
+            if (maxDepth.HasValue && currentDepth == maxDepth.Value)
+            {
+                return tree;
+            }
+
+            // مرتب‌سازی فرزندان برای نمایش مرتب‌تر
+            var sortedChildren = targetDir.Children.OrderBy(c => c.Name).ToList();
 
             for (int i = 0; i < sortedChildren.Count; i++)
             {
@@ -388,21 +423,30 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 string childIndent = indent + (isLast ? "    " : "│   ");
 
-                if (child is Directory dir)
+                if (child is Directory childDirectory)
                 {
-                    PrintTree(dir, childIndent, isLastChild);
+                    if (childDirectory != targetDir) // جلوگیری از خودارجاعی ساده
+                    {
+                        tree += Tree(rchCommandLine, null, childDirectory, childIndent, isLastChild, maxDepth, currentDepth + 1);
+                    }
                 }
                 else
                 {
-                    Console.Write(childIndent);
-                    Console.Write(isLastChild ? "└── " : "├── ");
+                    tree += childIndent;
+                    tree += isLastChild ? "└── " : "├── ";
+                    File file = (File)child;
 
-                    // رنگ برای فایل‌ها
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine(child.Name);
-                    Console.ResetColor();
+                    if (!string.IsNullOrEmpty(file.FileType))
+                    {
+                        tree += file.Name + "." + file.FileType + "\n";
+                    }
+                    else
+                    {
+                        tree += file.Name + "\n";
+                    }
                 }
             }
+            return tree;
         }
         public string LsShow(RichTextBox rchCommandLine, string Path = null, bool MoreInfo = false, bool ShowHidden = false)
         {

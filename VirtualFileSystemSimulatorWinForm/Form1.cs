@@ -138,6 +138,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "usertype":
                     Usertype_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "tree":
+                    Tree_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -293,6 +296,48 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             UpdateTreeView(treeView);
 
+        }
+        public void Tree_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 1, 4, commandList))
+            {
+                int? deep = null; // استفاده از nullable برای حالت پیش‌فرض
+                string path = null;
+
+                foreach (string input in Inputs.Skip(1)) // از ایندکس ۱ شروع کن (پرش از دستور "tree")
+                {
+                    if (input.StartsWith("-n"))
+                    {
+                        // پردازش پارامترهای مختلف: -n3 یا -n 3
+                        string numberPart = input.Substring(2); // حذف "-n"
+
+                        if (string.IsNullOrEmpty(numberPart))
+                        {
+                            features.AddToCommandList("Invalid format for -n parameter. Use: -n<number>", commandList, false);
+                            return;
+                        }
+
+                        if (int.TryParse(numberPart, out int tempDeep) && tempDeep > 0)
+                        {
+                            deep = tempDeep;
+                        }
+                        else
+                        {
+                            features.AddToCommandList($"Invalid depth value: {numberPart}. Depth must be a positive number.", commandList, false);
+                            return;
+                        }
+                    }
+                    else if (!input.StartsWith("-")) // اگر آرگومان، پارامتر نیست (مسیر است)
+                    {
+                        path = input;
+                    }
+                }
+
+                // فراخوانی تابع Tree با پارامترهای استخراج شده
+                string treeResult = fs.Tree(commandList, path, null, "", true, deep, 0);
+                features.AddToCommandList(treeResult, commandList, false);
+            }
+            UpdateTreeView(treeView);
         }
         public void Pwd_Command(string[] Inputs, System.Windows.Forms.TreeView treeView)
         {
