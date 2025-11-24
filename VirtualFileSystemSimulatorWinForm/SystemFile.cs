@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static VirtualFileSystemSimulatorWinForm.Form1;
 
 namespace VirtualFileSystemSimulatorWinForm
@@ -275,6 +276,7 @@ namespace VirtualFileSystemSimulatorWinForm
         private Node ResolveAbsolutePath(string path, RichTextBox rchCommandLine)
         {
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            int Count = 1;
             var current = Root;
 
             foreach (var part in parts)
@@ -282,17 +284,27 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (part == "..")
                 {
                     if (current.Parent != null)
+                    {
                         current = current.Parent;
+                        Count++;
+                    }
                     continue;
                 }
 
                 if (part == ".")
+                {
+                    Count++;
                     continue;
+                }
 
                 var child = current.FindChild(part);
                 if (child is Directory dir)
                 {
                     current = dir;
+                }
+                else if (Count == parts.Length)
+                {
+
                 }
                 else if (child != null)
                 {
@@ -301,6 +313,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
+                    return null;
                 }
             }
 
@@ -338,6 +351,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
+                    return null;
                 }
             }
             return current;
@@ -685,6 +699,74 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
             }
             return false;
+        }
+        public void Ln(RichTextBox rchCommandLine, string[] Inputs)
+        {
+            if (Inputs[1] == "-s")
+            {
+                if (!Inputs[2].StartsWith("..") && !Inputs[2].StartsWith("/") && !Inputs[2].StartsWith("."))
+                {
+                    features.AddToCommandList($"path is not correct", rchCommandLine, false);
+                    return;
+                }
+                else
+                {
+                    var dirNode = ResolvePath(Inputs[2], rchCommandLine);
+                    if (dirNode == null) return;
+                    if (CurrentDirectory.IsNameExistChild(Inputs[3]))
+                    {
+                        features.AddToCommandList($"this name is exist !", rchCommandLine, false);
+                        return;
+                    }
+                    CurrentDirectory.AddChild(new File(Inputs[3], "", "", true, dirNode));
+
+                }
+            }
+            else
+            {
+                Node dirNode = null;
+                if (Inputs[1].StartsWith("..") || Inputs[1].StartsWith("/") || Inputs[1].StartsWith("."))
+                {
+                    // پیدا کردن دایرکتوری والد
+                    dirNode = ResolvePath(Inputs[1], rchCommandLine);
+                }
+                else
+                {
+                    // برای اسم فایل و نام پوشه کار کنه
+                    dirNode = CurrentDirectory.FindChild(Inputs[1].Split('.')[0]);
+                }
+                if (dirNode == null)
+                {
+                    features.AddToCommandList($"path is not correct", rchCommandLine, false);
+                    return;
+                }
+
+
+
+                // بررسی اینکه هدف یک فایل است (لینک سخت فقط برای فایل‌ها)
+                if (dirNode is Directory)
+                {
+                    features.AddToCommandList($"Hard link cannot be created for directory: {Inputs[1]}", rchCommandLine, false);
+                    return;
+                }
+                if (CurrentDirectory.IsNameExistChild(Inputs[2]))
+                {
+                    features.AddToCommandList($"this name is exist !", rchCommandLine, false);
+                    return;
+                }
+                // ایجاد لینک سخت
+                if (dirNode is File targetFile)
+                {
+                    var hardLink = new File(Inputs[2], targetFile.FileType, targetFile.Content, targetFile.IsLink, targetFile.Link)
+                    {
+                        Permissions = targetFile.Permissions
+                    };
+
+                    CurrentDirectory.AddChild(hardLink);
+                }
+
+
+            }
         }
         public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
         {

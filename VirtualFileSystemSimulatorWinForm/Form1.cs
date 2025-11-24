@@ -141,6 +141,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "tree":
                     Tree_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "ln":
+                    Ln_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -339,6 +342,18 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             UpdateTreeView(treeView);
         }
+        public void Ln_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 3, 4, commandList))
+            {
+
+                fs.Ln(rchCommandList, Inputs);
+
+
+
+            }
+            UpdateTreeView(treeView);
+        }
         public void Pwd_Command(string[] Inputs, System.Windows.Forms.TreeView treeView)
         {
             if (features.CheckLength(Inputs, 1, 1, rchCommandList))
@@ -377,15 +392,31 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     // اضافه کردن فایل‌ها
-                    TreeNode fileNode = new TreeNode("💾 " + child.Name)
+                    File file = (File)child;
+                    TreeNode fileNode;
+                    //لینک به بقیه موارد نیست
+                    if (!file.IsLink)
                     {
-                        Tag = child,
-                        ImageKey = "💾",
-                        SelectedImageKey = "💾",
-                        ForeColor = Color.Red
-                    };
+                        fileNode = new TreeNode("💾 " + child.Name)
+                        {
+                            Tag = child,
+                            ImageKey = "💾",
+                            SelectedImageKey = "💾",
+                            ForeColor = Color.Red
+                        };
+                    }
+                    else
+                    {
+                        fileNode = new TreeNode("🔗 " + child.Name)
+                        {
+                            Tag = child,
+                            ImageKey = "🔗",
+                            SelectedImageKey = "🔗",
+                            ForeColor = Color.Violet
+                        };
+                    }
                     //برای نمایش ندادن موراد هیدن
-                    if (!fileNode.Text.StartsWith("💾 ."))
+                    if (!fileNode.Text.StartsWith("💾 .") && !fileNode.Text.StartsWith("🔗 ."))
                     {
                         currentNode.Nodes.Add(fileNode);
                     }

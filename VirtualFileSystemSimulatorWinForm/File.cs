@@ -12,11 +12,15 @@ namespace VirtualFileSystemSimulatorWinForm
 
         public string Content { get; set; }
         public string FileType { get; set; }
+        public bool IsLink { get; set; } = false;
+        public Node Link { get; set; }
 
-        public File(string name, string fileType = "txt") : base(name)
+        public File(string name, string fileType = "txt", string content = "", bool islink = false, Node link = null) : base(name)
         {
-            Content = "";
+            Content = content;
             FileType = fileType;
+            IsLink = islink;
+            Link = link;
         }
 
         public int Size => Content.Length;
