@@ -821,18 +821,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
             try
             {
-                // ساخت مسیر از دایرکتوری جاری تا ریشه
-                var pathStack = new Stack<string>();
-                Directory temp = currentDirectory;
-
-                while (temp != null && temp.Name != "/")
-                {
-                    pathStack.Push(temp.Name);
-                    temp = temp.Parent;
-                }
-
-                // ترکیب بخش‌های مسیر
-                string fullPath = "/" + string.Join("/", pathStack);
+                string fullPath = NodePathToString(currentDirectory);
                 features.AddToCommandList(fullPath, rchCommandLine, false);
             }
             catch (Exception ex)
