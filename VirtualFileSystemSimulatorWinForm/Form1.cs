@@ -147,20 +147,17 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "stat":
                     Stat_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "echo":
+                    Echo_Command(InputArray, rchCommandList, TreeView);
+                    break;
+                case "cat":
+                    Cat_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
             }
             UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
-
-            // ایجاد ساختار
-            //fs.CreateDirectory("/home");
-            //fs.CreateDirectory("/home/user");
-            //fs.ChangeDirectory("/home/user");
-            //fs.CreateFile("document.txt");
-
-            // نمایش درخت
-            //fs.PrintTree(fs.Root);
         }
 
 
@@ -199,6 +196,29 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     fs.CreateFile(Inputs[1], commandList);
                 }
+                UpdateTreeView(treeView);
+            }
+
+        }
+        public void Echo_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 3, 6, rchCommandList))
+            {
+                string dateTime = null;
+                if (Inputs.Length > 6 && Inputs[3] == "-t")
+                {
+                    dateTime = Inputs[4] + " " + Inputs[5];
+                }
+                fs.Echo(Inputs[2], Inputs[1].Trim('\"'), fs.CurrentDirectory, commandList, dateTime);
+                UpdateTreeView(treeView);
+            }
+
+        }
+        public void Cat_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 2, 2, rchCommandList))
+            {
+                fs.Cat(Inputs[2], Inputs[1].Trim('\"'), fs.CurrentDirectory, commandList, dateTime);
                 UpdateTreeView(treeView);
             }
 

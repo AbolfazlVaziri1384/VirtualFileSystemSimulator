@@ -154,7 +154,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // پیاده‌سازی دستور touch
-        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null)
+        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null, string content = null)
         {
             if (string.IsNullOrEmpty(path))
                 features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
@@ -223,6 +223,11 @@ namespace VirtualFileSystemSimulatorWinForm
             if (!string.IsNullOrEmpty(customTime))
             {
                 newFile.CreationTime = customTime;
+            }
+            // تنظیم متن در صورت وجود
+            if (!string.IsNullOrEmpty(content))
+            {
+                newFile.Content = content;
             }
 
             parentDir.AddChild(newFile);
@@ -798,7 +803,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     features.AddToCommandList($"Permissions : {File.Permissions}", rchCommandLine, false);
                     return;
                 }
-                else 
+                else
                 {
                     features.AddToCommandList($"Name : {File.Name}", rchCommandLine, false);
                     features.AddToCommandList("Type : File", rchCommandLine, false);
@@ -835,7 +840,110 @@ namespace VirtualFileSystemSimulatorWinForm
                 features.AddToCommandList($"Error updating current route: {ex.Message}", rchCommandLine, false);
             }
         }
+        public void Echo(string name, string content, Directory currentDirectory, RichTextBox rchCommandLine, string datetime = null)
+        {
+            // ترکیب بخش‌های مسیر
+            string fullPathandfilename = NodePathToString(currentDirectory) + "/" + name;
+            CreateFile(fullPathandfilename, rchCommandLine, datetime, content);
 
+        }
+        public string NodePathToString(Directory currentDirectory)
+        {
+            if (currentDirectory == null)
+                return null;
+
+            // ساخت مسیر از دایرکتوری جاری تا ریشه
+            var pathStack = new Stack<string>();
+            Directory temp = currentDirectory;
+
+            while (temp != null && temp.Name != "/")
+            {
+                pathStack.Push(temp.Name);
+                temp = temp.Parent;
+            }
+
+            // ترکیب بخش‌های مسیر
+            return "/" + string.Join("/", pathStack);
+        }
+
+        public void Cat(string path, RichTextBox rchCommandLine)
+        {
+            string directoryPath = "/" + string.Join("/", pathStack) + "/" + name;
+            if (path.StartsWith(".") || path.StartsWith("/"))
+                // جدا کردن مسیر به دایرکتوری والد و نام فایل
+                // برای مثال /user/ali/report.txt
+                directoryPath = GetDirectoryPath(path);
+
+            string fileName = GetFileName(path);
+
+            // پیدا کردن دایرکتوری والد
+            Directory parentDir;
+            if (directoryPath == ".")
+            {
+                parentDir = CurrentDirectory;
+            }
+            else
+            {
+                var dirNode = ResolvePath(directoryPath, rchCommandLine);
+                if (dirNode is Directory directory)
+                {
+                    parentDir = directory;
+                }
+                else
+                {
+                    features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                    return;
+                }
+            }
+            if (!fileName.StartsWith("."))
+            {
+                //برای فایل های قابل نمایش
+                // بررسی وجود فایل/دایرکتوری با همین نام
+                if (parentDir.FindChild(fileName.Split('.')[0]) != null)
+                {
+                    features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                    return;
+                }
+            }
+            else
+            {
+                //برای فایل های غیر قابل نمایش
+                // بررسی وجود فایل/دایرکتوری با همین نام
+                if (parentDir.FindChild(fileName.Split('.')[1]) != null)
+                {
+                    features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                    return;
+                }
+            }
+
+            // ایجاد فایل جدید
+            string fileExtension = Path.GetExtension(fileName).TrimStart('.');
+            if (string.IsNullOrEmpty(fileExtension))
+                fileExtension = "txt";
+            File newFile;
+            if (!fileName.StartsWith("."))
+            {
+                //برای فایل های قابل نمایش
+                newFile = new File(fileName.Split('.')[0], fileExtension);
+            }
+            else
+            {
+                //برای فایل های غیر قابل نمایش
+                newFile = new File("." + fileName.Split('.')[1], fileExtension);
+            }
+            // تنظیم زمان در صورت وجود
+            if (!string.IsNullOrEmpty(customTime))
+            {
+                newFile.CreationTime = customTime;
+            }
+            // تنظیم متن در صورت وجود
+            if (!string.IsNullOrEmpty(content))
+            {
+                newFile.Content = content;
+            }
+
+            parentDir.AddChild(newFile);
+        }
     }
 
 }
