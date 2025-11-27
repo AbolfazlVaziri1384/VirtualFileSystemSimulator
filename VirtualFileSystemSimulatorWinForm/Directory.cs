@@ -30,6 +30,11 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             return Children.FirstOrDefault(child => child.Name == name);
         }
+        // تعداد فرزندان
+        public int CountChild()
+        {
+            return Children.Count;
+        }
         // نام تکراری ؟
         public bool IsNameExistChild(string name)
         {

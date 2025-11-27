@@ -144,6 +144,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "ln":
                     Ln_Command(InputArray, rchCommandList, TreeView);
                     break;
+                case "stat":
+                    Stat_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -346,11 +349,15 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (features.CheckLength(Inputs, 3, 4, commandList))
             {
-
                 fs.Ln(rchCommandList, Inputs);
-
-
-
+            }
+            UpdateTreeView(treeView);
+        }
+        public void Stat_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 2, 3, commandList))
+            {
+                fs.Stat(rchCommandList, Inputs);
             }
             UpdateTreeView(treeView);
         }

@@ -768,6 +768,47 @@ namespace VirtualFileSystemSimulatorWinForm
 
             }
         }
+        public void Stat(RichTextBox rchCommandLine, string[] Inputs)
+        {
+            bool MoreInfo = false;
+            if (Inputs.Length > 2 && Inputs[2] == "-l") MoreInfo = true;
+            var dirNode = ResolvePath(Inputs[1], rchCommandLine);
+            if (dirNode == null)
+            {
+                features.AddToCommandList("Maybe name is not correct", rchCommandLine, false);
+                return;
+            }
+            if (dirNode is Directory directory)
+            {
+                features.AddToCommandList($"Name : {directory.Name}", rchCommandLine, false);
+                features.AddToCommandList("Type : Directory", rchCommandLine, false);
+                features.AddToCommandList($"Size : {directory.CountChild()}", rchCommandLine, false);
+                features.AddToCommandList($"CreationTime : {directory.CreationTime}", rchCommandLine, false);
+                features.AddToCommandList($"Permissions : {directory.Permissions}", rchCommandLine, false);
+                return;
+            }
+            else if (dirNode is File File)
+            {
+                if (File.IsLink)
+                {
+                    features.AddToCommandList($"Name : {File.Name}", rchCommandLine, false);
+                    features.AddToCommandList("Type : Link", rchCommandLine, false);
+                    features.AddToCommandList($"Type : {File.Size}", rchCommandLine, false);
+                    features.AddToCommandList($"CreationTime : {File.CreationTime}", rchCommandLine, false);
+                    features.AddToCommandList($"Permissions : {File.Permissions}", rchCommandLine, false);
+                    return;
+                }
+                else 
+                {
+                    features.AddToCommandList($"Name : {File.Name}", rchCommandLine, false);
+                    features.AddToCommandList("Type : File", rchCommandLine, false);
+                    features.AddToCommandList($"Type : {File.Size}", rchCommandLine, false);
+                    features.AddToCommandList($"CreationTime : {File.CreationTime}", rchCommandLine, false);
+                    features.AddToCommandList($"Permissions : {File.Permissions}", rchCommandLine, false);
+                    return;
+                }
+            }
+        }
         public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
         {
             if (currentDirectory == null)
