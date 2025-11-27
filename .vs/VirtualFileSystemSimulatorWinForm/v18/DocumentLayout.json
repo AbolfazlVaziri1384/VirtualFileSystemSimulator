@@ -60,7 +60,7 @@
               "RelativeDocumentMoniker": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
               "ToolTip": "D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "ViewState": "AgIAAK4CAAAAAAAAAAAwwD4DAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAMBAAAAAAAAAAAhwO4AAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-24T17:28:33.266Z",
               "EditorCaption": ""
@@ -73,9 +73,10 @@
               "RelativeDocumentMoniker": "VirtualFileSystemSimulatorWinForm\\Form1.cs",
               "ToolTip": "D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\Form1.cs",
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Form1.cs",
-              "ViewState": "AgIAAMgAAAAAAAAAAAAuwNMAAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAMoAAAAAAAAAAIA3wNwAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-29T04:33:46.094Z"
+              "WhenOpened": "2025-10-29T04:33:46.094Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -146,7 +147,8 @@
               "ToolTip": "D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\Form1.cs [Design]",
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-29T04:25:58.039Z"
+              "WhenOpened": "2025-10-29T04:25:58.039Z",
+              "EditorCaption": " [Design]"
             }
           ]
         }

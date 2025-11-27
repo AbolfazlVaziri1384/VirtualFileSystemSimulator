@@ -218,7 +218,7 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (features.CheckLength(Inputs, 2, 2, rchCommandList))
             {
-                fs.Cat(Inputs[2], Inputs[1].Trim('\"'), fs.CurrentDirectory, commandList, dateTime);
+                fs.Cat(Inputs[1], commandList);
                 UpdateTreeView(treeView);
             }
 
