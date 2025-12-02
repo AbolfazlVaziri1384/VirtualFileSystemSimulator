@@ -725,7 +725,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     var dirNode = ResolvePath(Inputs[2], rchCommandLine);
                     if (dirNode == null) return;
-                    if (CurrentDirectory.IsNameExistChild(Inputs[3]))
+                    if (CurrentDirectory.IsExistChildName(Inputs[3]))
                     {
                         features.AddToCommandList($"this name is exist !", rchCommandLine, false);
                         return;
@@ -761,7 +761,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     features.AddToCommandList($"Hard link cannot be created for directory: {Inputs[1]}", rchCommandLine, false);
                     return;
                 }
-                if (CurrentDirectory.IsNameExistChild(Inputs[2]))
+                if (CurrentDirectory.IsExistChildName(Inputs[2]))
                 {
                     features.AddToCommandList($"this name is exist !", rchCommandLine, false);
                     return;
@@ -985,22 +985,22 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
             }
-            if (!CurrentDirectory.IsNameExistChild(mainfileName) && mainfileName != null)
+            if (!CurrentDirectory.IsExistChildName(mainfileName) && mainfileName != null)
             {
                 features.AddToCommandList($"'{mainfileName}' is not a file", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsNameExistChild(mainfileName) && mainfileName != null && secondfileName == null)
+            if (SecondDir.IsExistChildName(mainfileName) && mainfileName != null && secondfileName == null)
             {
                 features.AddToCommandList($"'{mainfileName}' is already exist in this path", rchCommandLine, false);
                 return;
             }
-            if (!CurrentDirectory.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (!CurrentDirectory.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
             {
                 features.AddToCommandList($"'{mainfolderpath}' is not a folder", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (SecondDir.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
             {
                 features.AddToCommandList($"'{mainfolderpath}' is already exist in this path", rchCommandLine, false);
                 return;
@@ -1082,22 +1082,22 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
             }
-            if (!CurrentDirectory.IsNameExistChild(mainfileName) && mainfileName != null)
+            if (!CurrentDirectory.IsExistChildName(mainfileName) && mainfileName != null)
             {
                 features.AddToCommandList($"'{mainfileName}' is not a file", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsNameExistChild(mainfileName) && mainfileName != null)
+            if (SecondDir.IsExistChildName(mainfileName) && mainfileName != null)
             {
                 features.AddToCommandList($"'{mainfileName}' is already exist in this path", rchCommandLine, false);
                 return;
             }
-            if (!CurrentDirectory.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (!CurrentDirectory.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
             {
                 features.AddToCommandList($"'{mainfolderpath}' is not a folder", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (SecondDir.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
             {
                 features.AddToCommandList($"'{mainfolderpath}' is already exist in this path", rchCommandLine, false);
                 return;

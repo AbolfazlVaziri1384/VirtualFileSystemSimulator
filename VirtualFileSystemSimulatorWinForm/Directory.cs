@@ -19,34 +19,34 @@ namespace VirtualFileSystemSimulatorWinForm
             Parent = parent;
         }
 
-        // اضافه کردن فرزند
+        // Add child
         public void AddChild(Node child)
         {
             Children.Add(child);
         }
 
-        // پیدا کردن فرزند بر اساس نام
+        //Find child by Name
         public Node FindChild(string name)
         {
             return Children.FirstOrDefault(child => child.Name == name);
         }
-        // تعداد فرزندان
+
+        // Count of node's child
         public int CountChild()
         {
             return Children.Count;
         }
-        // نام تکراری ؟
-        public bool IsNameExistChild(string name)
+        
+        public bool IsExistChildName(string name)
         {
             return Children.Any(child => child.Name == name);
         }
-        // آیا فرزندی دارد؟
+        
         public bool HasChild()
         {
             return Children.Count != 0;
         }
 
-        // حذف فرزند
         public bool RemoveChild(string name)
         {
             var child = FindChild(name);

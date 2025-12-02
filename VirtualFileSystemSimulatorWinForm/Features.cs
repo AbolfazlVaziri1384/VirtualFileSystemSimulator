@@ -14,12 +14,12 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (rchCommandList != null && !rchCommandList.IsDisposed && isCommand)
             {
-                rchCommandList.Text += "> " + input + "\n";
+                rchCommandList.AppendText("> " + input + "\n");
                 rchCommandList.ScrollToCaret();
             }
             if (rchCommandList != null && !rchCommandList.IsDisposed && !isCommand)
             {
-                rchCommandList.Text += input + "\n";
+                rchCommandList.AppendText(input + "\n");
                 rchCommandList.ScrollToCaret();
             }
         }
@@ -40,6 +40,8 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
             }
         }
+
+        // For Check Input Length
         public bool CheckLength(string[] input , int Down , int Up , RichTextBox rchCommandList)
         {
             if (input.Length < Down || input.Length > Up)

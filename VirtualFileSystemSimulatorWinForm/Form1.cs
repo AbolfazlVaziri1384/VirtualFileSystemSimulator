@@ -164,6 +164,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
             }
             UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
+            rchCommandList.ScrollToCaret();
         }
 
 
