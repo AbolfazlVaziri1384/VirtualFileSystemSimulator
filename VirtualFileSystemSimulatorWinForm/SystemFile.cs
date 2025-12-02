@@ -924,6 +924,106 @@ namespace VirtualFileSystemSimulatorWinForm
                 return;
             }
         }
+        public void Mv(string[] Inputs, RichTextBox rchCommandLine)
+        {
+            string mainfileName = null;
+            string mainfolderpath = null;
+
+            if (Inputs[1].StartsWith(".") || Inputs[1].StartsWith("/"))
+                mainfolderpath = Inputs[1];
+            else
+                mainfileName = GetFileName(Inputs[1]);
+
+            string secondfileName = null;
+            string secondfolderpath = NodePathToString(CurrentDirectory);
+
+            if (Inputs[2].StartsWith(".") || Inputs[2].StartsWith("/"))
+                // جدا کردن مسیر به دایرکتوری والد و نام فایل
+                // برای مثال /user/ali/report.txt
+                secondfolderpath = Inputs[2];
+            else
+                secondfileName = GetFileName(Inputs[2]);
+
+            // پیدا کردن دایرکتوری والد
+            Directory FirstDir = null;
+            if (mainfolderpath != null)
+            {
+                
+                if (mainfolderpath == ".")
+                {
+                    FirstDir = CurrentDirectory;
+                }
+                else
+                {
+                    var dirNode = ResolvePath(mainfolderpath, rchCommandLine);
+                    if (dirNode is Directory directory)
+                    {
+                        FirstDir = directory;
+                    }
+                    else
+                    {
+                        features.AddToCommandList($"'{mainfolderpath}' is not a directory", rchCommandLine, false);
+                        return;
+                    }
+                }
+            }
+            Directory SecondDir;
+            if (secondfolderpath == ".")
+            {
+                SecondDir = CurrentDirectory;
+            }
+            else
+            {
+                var dirNode = ResolvePath(secondfolderpath, rchCommandLine);
+                if (dirNode is Directory directory)
+                {
+                    SecondDir = directory;
+                }
+                else
+                {
+                    features.AddToCommandList($"'{secondfolderpath}' is not a directory", rchCommandLine, false);
+                    return;
+                }
+            }
+            if (!CurrentDirectory.IsNameExistChild(mainfileName) && mainfileName != null)
+            {
+                features.AddToCommandList($"'{mainfileName}' is not a file", rchCommandLine, false);
+                return;
+            }
+            if (SecondDir.IsNameExistChild(mainfileName) && mainfileName != null && secondfileName == null)
+            {
+                features.AddToCommandList($"'{mainfileName}' is already exist in this path", rchCommandLine, false);
+                return;
+            }
+            if (!CurrentDirectory.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            {
+                features.AddToCommandList($"'{mainfolderpath}' is not a folder", rchCommandLine, false);
+                return;
+            }
+            if (SecondDir.IsNameExistChild(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            {
+                features.AddToCommandList($"'{mainfolderpath}' is already exist in this path", rchCommandLine, false);
+                return;
+            }
+
+            if (secondfileName == null && mainfolderpath == null)
+            {
+                File file = (File)CurrentDirectory.FindChild(mainfileName);
+                SecondDir.AddChild(file);
+                CurrentDirectory.RemoveChild(Inputs[1].Trim().Split('/').ToArray().Last());
+            }
+            else if(mainfileName == null && secondfileName == null)
+            {
+                SecondDir.AddChild(FirstDir);
+                CurrentDirectory.RemoveChild(Inputs[1].Trim().Split('/').ToArray().Last());
+            } 
+            else if(mainfolderpath == null)
+            {
+                File file = (File)CurrentDirectory.FindChild(mainfileName);
+                file.Name = secondfileName;
+            }
+            
+        }
     }
 
 }
