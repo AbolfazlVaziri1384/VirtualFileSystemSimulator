@@ -156,9 +156,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "mv":
                     Mv_Command(InputArray, rchCommandList, TreeView);
                     break;
-                //case "cp":
-                //    Cp_Command(InputArray, rchCommandList, TreeView);
-                //    break;
+                case "cp":
+                    Cp_Command(InputArray, rchCommandList, TreeView);
+                    break;
                 default:
                     features.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -234,6 +234,15 @@ namespace VirtualFileSystemSimulatorWinForm
             if (features.CheckLength(Inputs, 3, 3, rchCommandList))
             {
                 fs.Mv(Inputs, commandList);
+                UpdateTreeView(treeView);
+            }
+
+        }
+        public void Cp_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
+        {
+            if (features.CheckLength(Inputs, 3, 3, rchCommandList))
+            {
+                fs.Cp(Inputs, commandList);
                 UpdateTreeView(treeView);
             }
 
