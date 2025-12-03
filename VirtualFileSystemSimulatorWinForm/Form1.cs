@@ -21,7 +21,7 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             InitializeComponent();
         }
-        public SystemFile Fs = new SystemFile();
+        public SystemFile Fs;
         public Features Feature = new Features();
         public bool IsFirstUpKey = true;
         public Stack<string> FirstAllCommand = new Stack<string>();
@@ -174,7 +174,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            UpdateTreeView(TreeView);
         }
         public void MkdirCommand(string[] inputs, RichTextBox commandList)
         {
@@ -470,7 +470,8 @@ namespace VirtualFileSystemSimulatorWinForm
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-         //Application.Exit();    
+            System.Windows.Forms.Application.Exit();
         }
+
     }
 }

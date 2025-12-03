@@ -29,7 +29,7 @@ namespace VirtualFileSystemSimulatorWinForm
             if (users.Login(txtUsername.Text.Trim(), txtPassword.Text.Trim()))
             {
                 MessageBox.Show($"Welcome {txtUsername.Text.Trim()}", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                SystemFile fs = new SystemFile();
+                SystemFile fs = new SystemFile(users);
                 fs.UserManager = users;
                 Form1 frm = new Form1();
                 frm.Fs = fs;

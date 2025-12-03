@@ -9,16 +9,17 @@ namespace VirtualFileSystemSimulatorWinForm
 {
     public class SystemFile
     {
-        public Directory Root { get; private set; }
+        public Directory Root { get; set; }
         public Directory CurrentDirectory { get; private set; }
         public Features Feature = new Features();
         public UserType CurrentUserType = UserType.Owner;
         public Json UserManager { get; set; }
-        private readonly byte[] _key = Encoding.UTF8.GetBytes("your_secret_key_change_this"); // کلید رمزنگاری (تغییر دهید)
+        private readonly byte[] _key = Encoding.UTF8.GetBytes("mysecretkey"); // کلید رمزنگاری
 
-        public SystemFile()
+        public SystemFile(Json userManager)
         {
-            Root = new Directory("/");
+            UserManager = userManager;
+            Root = (Directory)UserManager.LoadVfsForCurrentUser();
             CurrentDirectory = Root;
         }
         public enum UserType { Owner, Group, Others }
@@ -35,31 +36,11 @@ namespace VirtualFileSystemSimulatorWinForm
             return CurrentUserType;
         }
 
-        // رمزنگاری ساده XOR
-        public byte[] SimpleEncrypt(byte[] data)
-        {
-            var encrypted = new byte[data.Length];
-            for (int i = 0; i < data.Length; i++)
-            {
-                encrypted[i] = (byte)(data[i] ^ _key[i % _key.Length]);
-            }
-            return encrypted;
-        }
-        public byte[] SimpleDecrypt(byte[] data)
-        {
-            return SimpleEncrypt(data); // symmetric
-        }
-        // بعد از لاگین موفق در فرم، VFS را لود کنید
-        public void LoadAfterLogin()
-        {
-            Root = (Directory)UserManager.LoadVfsForCurrentUser(this);
-            CurrentDirectory = Root;
-        }
 
         // ذخیره بعد از عملیات
         public void Save()
         {
-            UserManager.SaveVfsForCurrentUser(this, Root);
+            UserManager.SaveVfsForCurrentUser(Root);
         }
 
         // چک مجوزها (مثال ساده)
@@ -734,7 +715,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
                         return;
                     }
-                    CurrentDirectory.AddChild(new File(_Name, islink: true, link: _DirectoryNode));
+                    CurrentDirectory.AddChild(new File(_Name, isLink: true, link: _Path));
 
                 }
             }
@@ -771,7 +752,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 if (_DirectoryNode is File targetFile)
                 {
-                    var hardLink = new File(_Name, fileType: targetFile.FileType, content: targetFile.Content, islink: targetFile.IsLink, link: targetFile.Link)
+                    var hardLink = new File(_Name, fileType: targetFile.FileType, content: targetFile.Content, isLink: targetFile.IsLink, link: targetFile.Link)
                     {
                         Permissions = targetFile.Permissions
                     };

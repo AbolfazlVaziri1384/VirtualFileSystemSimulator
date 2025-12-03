@@ -76,49 +76,41 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
-        public Node LoadVfsForCurrentUser(SystemFile fs)
+        public Node LoadVfsForCurrentUser()
         {
             if (CurrentUser == null) return null;
             string userVfsFile = $"vfs_{CurrentUser.Username}.json";
-            if (!System.IO.File.Exists(userVfsFile)) return new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin"); // VFS جدید اگر نبود
 
-            var content = System.IO.File.ReadAllBytes(userVfsFile);
-            var parts = Encoding.UTF8.GetString(content).Split('|', ((char)StringSplitOptions.RemoveEmptyEntries));
-            if (parts.Length != 2)
-            {
-                throw new Exception("Invalid file format");
-            }
-            var encrypted = Encoding.UTF8.GetBytes(parts[0]);
-            var hashValue = parts[1];
-            var jsonBytes = fs.SimpleDecrypt(encrypted); // فرض بر استفاده از متد SimpleDecrypt از SystemFile
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                var calculatedHash = BitConverter.ToString(sha256.ComputeHash(jsonBytes)).Replace("-", "");
-                if (calculatedHash != hashValue)
-                {
-                    throw new Exception("Data tampered! File may have been modified.");
-                }
-            }
-            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+            // اگر فایل وجود نداشت، VFS جدید ایجاد کن
+            if (!System.IO.File.Exists(userVfsFile))
+                return new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
+
+            var jsonString = System.IO.File.ReadAllText(userVfsFile);
+
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+
             return Node.FromDict(data);
         }
 
+
+
         // ذخیره VFS برای کاربر جاری
-        public void SaveVfsForCurrentUser(SystemFile fs, Node root)
+        public void SaveVfsForCurrentUser(Node root)
         {
             if (CurrentUser == null) return;
+
             string userVfsFile = $"vfs_{CurrentUser.Username}.json";
-            var data = root.ToDict();
+
+            // ساخت دیکشنری از Nodeها
+            var data = root.ToDictBase();
+
+            // Serialize با WriteIndented تا خوانا باشد
             var jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-            var jsonBytes = Encoding.UTF8.GetBytes(jsonData);
-            var encrypted = fs.SimpleEncrypt(jsonBytes); // فرض بر استفاده از متد SimpleEncrypt از SystemFile
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                var hashValue = BitConverter.ToString(sha256.ComputeHash(jsonBytes)).Replace("-", "");
-                var finalData = Encoding.UTF8.GetString(encrypted) + "|" + hashValue;
-                System.IO.File.WriteAllText(userVfsFile, finalData);
-            }
+
+            System.IO.File.WriteAllText(userVfsFile, jsonData);
         }
+
+
     }
 
 
