@@ -290,33 +290,9 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void UserTypeCommand(string[] inputs, RichTextBox commandList)
         {
-            if (Feature.CheckLength(inputs, 1, 2, rchCommandList))
+            if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
             {
-                if (inputs.Length == 1)
-                {
-                    Feature.AddToCommandList(Fs.ShowUserType().ToString(), rchCommandList, false);
-                }
-                else
-                {
-                    switch (inputs[1])
-                    {
-                        case "owner":
-                            Fs.ChangeUserType(SystemFile.UserType.Owner);
-                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
-                            break;
-                        case "group":
-                            Fs.ChangeUserType(SystemFile.UserType.Group);
-                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
-                            break;
-                        case "others":
-                            Fs.ChangeUserType(SystemFile.UserType.Others);
-                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
-                            break;
-                        default:
-                            Feature.AddToCommandList("Not found your user type", rchCommandList, false);
-                            break;
-                    }
-                }
+                Feature.AddToCommandList(Fs.ShowUserType().ToString(), rchCommandList, false);
             }
         }
         public void TreeCommand(string[] inputs, RichTextBox commandList)

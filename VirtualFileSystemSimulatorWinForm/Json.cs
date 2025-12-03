@@ -19,7 +19,7 @@ namespace VirtualFileSystemSimulatorWinForm
             LoadUsers();
             if (!_users.ContainsKey("admin"))
             {
-                Register("admin", "admin", true);
+                Register("admin", "admin", User.UserTypeEnum.Admin);
             }
         }
 
@@ -42,7 +42,7 @@ namespace VirtualFileSystemSimulatorWinForm
             System.IO.File.WriteAllText(_usersFile, json);
         }
 
-        public bool Register(string username, string password, bool isAdmin = false)
+        public bool Register(string username, string password , User.UserTypeEnum userType)
         {
             if (_users.ContainsKey(username))
             {
@@ -51,13 +51,12 @@ namespace VirtualFileSystemSimulatorWinForm
             using (SHA256 sha256 = SHA256.Create())
             {
                 var passwordHash = BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(password))).Replace("-", "");
-                var newUser = new User(username, passwordHash, isAdmin);
+                var newUser = new User(username, passwordHash , (int)userType);
                 _users[username] = newUser;
                 SaveUsers();
                 return true;
             }
         }
-
         public bool Login(string username, string password)
         {
             if (_users.TryGetValue(username, out var user))

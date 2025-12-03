@@ -12,9 +12,7 @@ namespace VirtualFileSystemSimulatorWinForm
         public Directory Root { get; set; }
         public Directory CurrentDirectory { get; private set; }
         public Features Feature = new Features();
-        public UserType CurrentUserType = UserType.Owner;
         public Json UserManager { get; set; }
-        private readonly byte[] _key = Encoding.UTF8.GetBytes("mysecretkey"); // کلید رمزنگاری
 
         public SystemFile(Json userManager)
         {
@@ -22,20 +20,6 @@ namespace VirtualFileSystemSimulatorWinForm
             Root = (Directory)UserManager.LoadVfsForCurrentUser();
             CurrentDirectory = Root;
         }
-        public enum UserType { Owner, Group, Others }
-
-        // For Change User Type
-        public void ChangeUserType(UserType usertype)
-        {
-            CurrentUserType = usertype;
-        }
-
-        // For Show User Type 
-        public UserType ShowUserType()
-        {
-            return CurrentUserType;
-        }
-
 
         // ذخیره بعد از عملیات
         public void Save()
@@ -43,15 +27,10 @@ namespace VirtualFileSystemSimulatorWinForm
             UserManager.SaveVfsForCurrentUser(Root);
         }
 
-        // چک مجوزها (مثال ساده)
-        private bool HasPermission(Node node, string action) // action: "r", "w", "x"
+        // For Show User Type 
+        public User.UserTypeEnum ShowUserType()
         {
-            if (UserManager.CurrentUser == null) return false;
-            if (UserManager.CurrentUser.IsAdmin) return true;
-
-            int offset = UserManager.CurrentUser.Username == node.Owner ? 0 : (UserManager.CurrentUser.Username == node.Group ? 3 : 6);
-            char perm = node.Permissions[offset + (action == "r" ? 0 : (action == "w" ? 1 : 2))];
-            return perm != '-';
+            return (User.UserTypeEnum)UserManager.CurrentUser.UserType;
         }
 
         // For managing ".." or "." in the path
@@ -72,12 +51,6 @@ namespace VirtualFileSystemSimulatorWinForm
         // For making directory
         public void Mkdir(string path, bool createparents, RichTextBox rchCommandLine)
         {
-            if (UserManager.CurrentUser == null)
-            {
-                Feature.AddToCommandList("Login required", rchCommandLine, false);
-                return;
-            }
-
             if (string.IsNullOrEmpty(path))
                 Feature.AddToCommandList("Path cannot be empty", rchCommandLine, false);
 
@@ -99,17 +72,14 @@ namespace VirtualFileSystemSimulatorWinForm
             Save();
         }
 
-
-
-
-
-
-
-
-
         // For Create Directory
         private void CreateDirectory(Directory current, string[] parts, int index, bool createparents, RichTextBox rchCommandLine)
         {
+            if (!UserManager.CurrentUser.HasPermission(current , "w"))
+            {
+                Feature.AddToCommandList("You do not have Permission to make directory in this path", rchCommandLine, false);
+                return;
+            }
             if (index >= parts.Length)
                 return;
 
@@ -185,6 +155,13 @@ namespace VirtualFileSystemSimulatorWinForm
                         return;
                     }
                 }
+
+                if (!UserManager.CurrentUser.HasPermission(_ParentDirectory, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to make file in this path", rchCommandLine, false);
+                    return;
+                }
+
                 if (!_FileName.StartsWith("."))
                 {
                     // Check existing for hiden file
@@ -232,6 +209,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
 
                 _ParentDirectory.AddChild(_NewFile);
+                Save();
             }
             catch
             {
@@ -561,7 +539,7 @@ namespace VirtualFileSystemSimulatorWinForm
             var _DirectoryNode = CurrentDirectory.FindChild(name);
             if (_DirectoryNode != null)
             {
-                if (!IsDeleteable(_DirectoryNode))
+                if (!UserManager.CurrentUser.HasPermission(_DirectoryNode,"w"))
                 {
                     Feature.AddToCommandList($"Permission denied: Cannot delete '{name}'", rchCommandLine, false);
                     return;
@@ -669,28 +647,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 Feature.AddToCommandList($"'{name}' is not found", rchCommandLine, false);
             }
-        }
-        //-----------------------این باید برده شود در کلاس پرمیشن ه____________________
-        public bool IsDeleteable(Node node)
-        {
-            switch (CurrentUserType)
-            {
-                case UserType.Owner:
-                    if (node.Permissions[1] == 'w')
-                        return true;
-                    break;
-                case UserType.Group:
-                    if (node.Permissions[4] == 'w')
-                        return true;
-                    break;
-                case UserType.Others:
-                    if (node.Permissions[7] == 'w')
-                        return true;
-                    break;
-                default:
-                    break;
-            }
-            return false;
+            Save();
         }
 
         // For making link file or directry
@@ -710,6 +667,13 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     var _DirectoryNode = ResolvePath(_Path, rchCommandLine);
                     if (_DirectoryNode == null) return;
+
+                    if (!UserManager.CurrentUser.HasPermission(_DirectoryNode, "w"))
+                    {
+                        Feature.AddToCommandList("You do not have Permission to make link in this path", rchCommandLine, false);
+                        return;
+                    }
+
                     if (CurrentDirectory.IsExistChildName(_Name))
                     {
                         Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
@@ -728,11 +692,23 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     // Find parent
                     _DirectoryNode = ResolvePath(_Path, rchCommandLine);
+
+                    if (!UserManager.CurrentUser.HasPermission(_DirectoryNode, "w"))
+                    {
+                        Feature.AddToCommandList("You do not have Permission to make link in this path", rchCommandLine, false);
+                        return;
+                    }
                 }
                 else
                 {
                     // For find name
                     _DirectoryNode = CurrentDirectory.FindChild(_Path.Split('.')[0]);
+
+                    if (!UserManager.CurrentUser.HasPermission(_DirectoryNode, "w"))
+                    {
+                        Feature.AddToCommandList("You do not have Permission to make link for this file", rchCommandLine, false);
+                        return;
+                    }
                 }
                 if (_DirectoryNode == null)
                 {
@@ -762,6 +738,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
 
             }
+            Save();
         }
 
         // For get information about file or directory
@@ -774,6 +751,11 @@ namespace VirtualFileSystemSimulatorWinForm
             if (_DirectoryNode == null)
             {
                 Feature.AddToCommandList("Maybe name is not correct", rchCommandLine, false);
+                return;
+            }
+            if (!UserManager.CurrentUser.HasPermission(_DirectoryNode, "r"))
+            {
+                Feature.AddToCommandList("You do not have Permission to get information about this", rchCommandLine, false);
                 return;
             }
             if (_DirectoryNode is Directory _Directory)
@@ -831,7 +813,6 @@ namespace VirtualFileSystemSimulatorWinForm
             // Combine path and file name
             string _FullPathAndFileName = NodePathToString(currentDirectory) + "/" + name;
             Touch(_FullPathAndFileName, rchCommandLine, datetime, content);
-
         }
 
         // Function to make string of node path
@@ -881,7 +862,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
             }
-
+            if (!UserManager.CurrentUser.HasPermission(_ParentDirectory, "r"))
+            {
+                Feature.AddToCommandList("You do not have Permission to read file's content", rchCommandLine, false);
+                return;
+            }
             if (_ParentDirectory.FindChild(_FileName) != null)
             {
                 File file = (File)_ParentDirectory.FindChild(_FileName);
@@ -935,6 +920,11 @@ namespace VirtualFileSystemSimulatorWinForm
                         return;
                     }
                 }
+                if (!UserManager.CurrentUser.HasPermission(_FirstDirectory, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to move", rchCommandLine, false);
+                    return;
+                }
             }
             Directory _SecondDirectory;
             if (_SecondDirectoryPath == ".")
@@ -951,6 +941,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 else
                 {
                     Feature.AddToCommandList($"'{_SecondDirectoryPath}' is not a directory", rchCommandLine, false);
+                    return;
+                }
+                if (!UserManager.CurrentUser.HasPermission(_SecondDirectory, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to move", rchCommandLine, false);
                     return;
                 }
             }
@@ -978,6 +973,11 @@ namespace VirtualFileSystemSimulatorWinForm
             if (_SecondFileName == null && _FirstDirectoryPath == null)
             {
                 File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                if (!UserManager.CurrentUser.HasPermission(file, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to move", rchCommandLine, false);
+                    return;
+                }
                 _SecondDirectory.AddChild(file);
                 file.Parent = _SecondDirectory;
                 CurrentDirectory.RemoveChild(inputs[1].Trim().Split('/').ToArray().Last());
@@ -991,9 +991,14 @@ namespace VirtualFileSystemSimulatorWinForm
             else if (_FirstDirectoryPath == null)
             {
                 File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                if (!UserManager.CurrentUser.HasPermission(file, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to change name", rchCommandLine, false);
+                    return;
+                }
                 file.Name = _SecondFileName;
             }
-
+            Save();
         }
 
         // For copy and paste file or directory to specifided path
@@ -1033,6 +1038,11 @@ namespace VirtualFileSystemSimulatorWinForm
                         return;
                     }
                 }
+                if (!UserManager.CurrentUser.HasPermission(_FirstDirectory, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to copy", rchCommandLine, false);
+                    return;
+                }
             }
             Directory _SecondDirectory;
             if (_SecondDirectoryPath == ".")
@@ -1051,6 +1061,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     Feature.AddToCommandList($"'{_SecondDirectoryPath}' is not a directory", rchCommandLine, false);
                     return;
                 }
+            }
+            if (!UserManager.CurrentUser.HasPermission(_SecondDirectory, "w"))
+            {
+                Feature.AddToCommandList("You do not have Permission to copy", rchCommandLine, false);
+                return;
             }
             if (!CurrentDirectory.IsExistChildName(_FirstFileName) && _FirstFileName != null)
             {
@@ -1076,6 +1091,11 @@ namespace VirtualFileSystemSimulatorWinForm
             if (_FirstDirectoryPath == null)
             {
                 File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                if (!UserManager.CurrentUser.HasPermission(file, "w"))
+                {
+                    Feature.AddToCommandList("You do not have Permission to copy", rchCommandLine, false);
+                    return;
+                }
                 _SecondDirectory.AddChild(file);
             }
             else
@@ -1083,7 +1103,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 Directory temp = _FirstDirectory;
                 _SecondDirectory.AddChild(temp);
             }
-
+            Save();
         }
     }
 

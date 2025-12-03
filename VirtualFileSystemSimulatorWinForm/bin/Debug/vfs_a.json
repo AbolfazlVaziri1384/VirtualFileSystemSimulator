@@ -1,0 +1,32 @@
+{
+  "name": "/",
+  "timestamp": "2025-12-03 18:51",
+  "permissions": "rwxr-xr-x",
+  "owner": "a",
+  "group": "admin",
+  "is_dir": true,
+  "children": [
+    {
+      "name": "ali",
+      "timestamp": "2025-12-03 18:51",
+      "permissions": "rwxr-xr-x",
+      "owner": "admin",
+      "group": "admin",
+      "is_dir": true,
+      "children": [
+        {
+          "name": "aqa",
+          "timestamp": "2025-12-03 19:03",
+          "permissions": "rw-r--r--",
+          "owner": "admin",
+          "group": "admin",
+          "is_dir": false,
+          "content": "",
+          "file_type": "txt",
+          "is_link": false,
+          "link": null
+        }
+      ]
+    }
+  ]
+}

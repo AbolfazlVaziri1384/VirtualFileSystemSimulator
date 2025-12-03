@@ -25,7 +25,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 return;
             }
             Json user = new Json();
-            user.Register(txtUsername.Text.Trim(), txtPassword.Text.Trim());
+            user.Register(txtUsername.Text.Trim(), txtPassword.Text.Trim(), User.UserTypeEnum.Owner);
             MessageBox.Show($"Registration is Successfully", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             Close();
         }
