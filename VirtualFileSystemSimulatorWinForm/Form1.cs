@@ -140,6 +140,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "usertype":
                     UserTypeCommand(_InputArray, rchCommandList);
                     break;
+                case "changeusertype":
+                    ChangeUserTypeCommand(_InputArray, rchCommandList);
+                    break;
                 case "tree":
                     TreeCommand(_InputArray, rchCommandList);
                     break;
@@ -293,6 +296,26 @@ namespace VirtualFileSystemSimulatorWinForm
             if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
             {
                 Feature.AddToCommandList(Fs.ShowUserType().ToString(), rchCommandList, false);
+            }
+        }
+        public void ChangeUserTypeCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
+            {
+                switch (inputs[2])
+                {
+                    case "owner":
+                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Owner,rchCommandList);
+                        break;
+                    case "group":
+                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Group,rchCommandList);
+                        break;
+                    case "other":
+                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Others,rchCommandList);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         public void TreeCommand(string[] inputs, RichTextBox commandList)

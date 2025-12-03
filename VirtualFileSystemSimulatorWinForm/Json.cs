@@ -73,6 +73,16 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             return false;
         }
+        public bool changeUserType(string username , User.UserTypeEnum newusertype)
+        {
+            if (_users.ContainsKey(username))
+            {
+                _users[username].UserType = (int)newusertype;
+                SaveUsers();
+                return true;
+            }
+            return false;
+        }
 
         // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
         public Node LoadVfsForCurrentUser()

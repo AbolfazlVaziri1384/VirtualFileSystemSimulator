@@ -32,6 +32,20 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             return (User.UserTypeEnum)UserManager.CurrentUser.UserType;
         }
+        public void ChangeUserType(string username , User.UserTypeEnum usertype, RichTextBox rchCommandLine)
+        {
+            if (!UserManager.CurrentUser.IsAdmin())
+            {
+                Feature.AddToCommandList("You do not have Permission to Change UserType", rchCommandLine, false);
+                return;
+            }
+            if (UserManager.changeUserType(username, usertype))
+            {
+                Feature.AddToCommandList("Success", rchCommandLine, false);
+                return;
+            }
+            Feature.AddToCommandList("This username is not valid", rchCommandLine, false);
+        }
 
         // For managing ".." or "." in the path
         private void NormalizePath(ref string path)
