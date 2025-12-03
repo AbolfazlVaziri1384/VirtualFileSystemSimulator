@@ -798,7 +798,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // Function to make string of node path
-        public string NodePathToString(Directory currentDirectory)
+        public static string NodePathToString(Directory currentDirectory)
         {
             if (currentDirectory == null)
                 return null;
