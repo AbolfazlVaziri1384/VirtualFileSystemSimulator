@@ -5,15 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static VirtualFileSystemSimulatorWinForm.Form1;
+using Newtonsoft.Json;
 
 namespace VirtualFileSystemSimulatorWinForm
 {
     public class Directory : Node
     {
         public List<Node> Children { get; set; }
-        public Directory Parent { get; set; }
-
-        public Directory(string name, Directory parent = null) : base(name)
+        public Directory(string name, Node parent = null, string timestamp = null, string permissions = "rwxr-xr-x", string owner = "admin", string group = "admin") : base(name,false,null, timestamp, permissions, owner, group)
         {
             Children = new List<Node>();
             Parent = parent;
@@ -36,12 +35,12 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             return Children.Count;
         }
-        
+
         public bool IsExistChildName(string name)
         {
             return Children.Any(child => child.Name == name);
         }
-        
+
         public bool HasChild()
         {
             return Children.Count != 0;
@@ -58,6 +57,11 @@ namespace VirtualFileSystemSimulatorWinForm
             return false;
         }
 
+        public override Dictionary<string, object> ToDict()
+        {
+            var data = base.ToDict();
+            data["children"] = Children.Select(c => new { c.Name, Dict = c.ToDict() }).ToDictionary(c => c.Name, c => c.Dict);
+            return data;
+        }
     }
-
 }

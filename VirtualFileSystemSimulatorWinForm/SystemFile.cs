@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace VirtualFileSystemSimulatorWinForm
@@ -12,6 +13,8 @@ namespace VirtualFileSystemSimulatorWinForm
         public Directory CurrentDirectory { get; private set; }
         public Features Feature = new Features();
         public UserType CurrentUserType = UserType.Owner;
+        public Users UserManager { get; private set; }
+        private readonly byte[] _key = Encoding.UTF8.GetBytes("your_secret_key_change_this"); // کلید رمزنگاری (تغییر دهید)
 
         public SystemFile()
         {
@@ -32,13 +35,51 @@ namespace VirtualFileSystemSimulatorWinForm
             return CurrentUserType;
         }
 
+        // رمزنگاری ساده XOR
+        public byte[] SimpleEncrypt(byte[] data)
+        {
+            var encrypted = new byte[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                encrypted[i] = (byte)(data[i] ^ _key[i % _key.Length]);
+            }
+            return encrypted;
+        }
+        public byte[] SimpleDecrypt(byte[] data)
+        {
+            return SimpleEncrypt(data); // symmetric
+        }
+        // بعد از لاگین موفق در فرم، VFS را لود کنید
+        public void LoadAfterLogin()
+        {
+            Root = (Directory)UserManager.LoadVfsForCurrentUser(this);
+            CurrentDirectory = Root;
+        }
+
+        // ذخیره بعد از عملیات
+        public void Save()
+        {
+            UserManager.SaveVfsForCurrentUser(this, Root);
+        }
+
+        // چک مجوزها (مثال ساده)
+        private bool HasPermission(Node node, string action) // action: "r", "w", "x"
+        {
+            if (UserManager.CurrentUser == null) return false;
+            if (UserManager.CurrentUser.IsAdmin) return true;
+
+            int offset = UserManager.CurrentUser.Username == node.Owner ? 0 : (UserManager.CurrentUser.Username == node.Group ? 3 : 6);
+            char perm = node.Permissions[offset + (action == "r" ? 0 : (action == "w" ? 1 : 2))];
+            return perm != '-';
+        }
+
         // For managing ".." or "." in the path
         private void NormalizePath(ref string path)
         {
             if (path.StartsWith(".."))
             {
                 if (CurrentDirectory.Parent != null)
-                    CurrentDirectory = CurrentDirectory.Parent;
+                    CurrentDirectory = (Directory)CurrentDirectory.Parent;
                 path = path.Substring(3);
             }
             else if (path.StartsWith("."))
@@ -50,6 +91,12 @@ namespace VirtualFileSystemSimulatorWinForm
         // For making directory
         public void Mkdir(string path, bool createparents, RichTextBox rchCommandLine)
         {
+            if (UserManager.CurrentUser == null)
+            {
+                Feature.AddToCommandList("Login required", rchCommandLine, false);
+                return;
+            }
+
             if (string.IsNullOrEmpty(path))
                 Feature.AddToCommandList("Path cannot be empty", rchCommandLine, false);
 
@@ -68,7 +115,16 @@ namespace VirtualFileSystemSimulatorWinForm
                 // Relative path
                 CreateDirectory(CurrentDirectory, parts, 0, createparents, rchCommandLine);
             }
+            Save();
         }
+
+
+
+
+
+
+
+
 
         // For Create Directory
         private void CreateDirectory(Directory current, string[] parts, int index, bool createparents, RichTextBox rchCommandLine)
@@ -176,17 +232,17 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (!_FileName.StartsWith("."))
                 {
                     // For files we can show there
-                    _NewFile = new File(_FileName.Split('.')[0], _FileExtension);
+                    _NewFile = new File(_FileName.Split('.')[0], fileType: _FileExtension);
                 }
                 else
                 {
                     // For files we can not show there
-                    _NewFile = new File("." + _FileName.Split('.')[1], _FileExtension);
+                    _NewFile = new File("." + _FileName.Split('.')[1], fileType: _FileExtension);
                 }
                 // Add custom time if it exist
                 if (!string.IsNullOrEmpty(customtime))
                 {
-                    _NewFile.CreationTime = customtime;
+                    _NewFile.Timestamp = customtime;
                 }
                 // Add text if it exist
                 if (!string.IsNullOrEmpty(content))
@@ -260,7 +316,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     if (_Current.Parent != null)
                     {
-                        _Current = _Current.Parent;
+                        _Current = (Directory)_Current.Parent;
                         _Count++;
                     }
                     continue;
@@ -305,7 +361,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (part == "..")
                 {
                     if (_Current.Parent != null)
-                        _Current = _Current.Parent;
+                        _Current = (Directory)_Current.Parent;
                     continue;
                 }
 
@@ -445,7 +501,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     if (_Child is Directory dir)
                     {
                         if (moreinfo)
-                            _FilesOrFolders += _Child.CreationTime + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
+                            _FilesOrFolders += _Child.Timestamp + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
                         else
                             _FilesOrFolders += _Child.Name + "    ";
                     }
@@ -454,7 +510,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                         File file = (File)_Child;
                         if (moreinfo)
-                            _FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                            _FilesOrFolders += file.Timestamp + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
                         else
                             _FilesOrFolders += file.Name + "." + file.FileType + "    ";
                     }
@@ -465,7 +521,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     if (_Child is Directory dir)
                     {
                         if (moreinfo)
-                            _FilesOrFolders += _Child.CreationTime + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
+                            _FilesOrFolders += _Child.Timestamp + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
                         else
                             _FilesOrFolders += _Child.Name + "    ";
                     }
@@ -474,7 +530,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                         File file = (File)_Child;
                         if (moreinfo)
-                            _FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                            _FilesOrFolders += file.Timestamp + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
                         else
                             _FilesOrFolders += file.Name + "." + file.FileType + "    ";
                     }
@@ -490,7 +546,7 @@ namespace VirtualFileSystemSimulatorWinForm
             if (path == "..")
             {
                 if (CurrentDirectory.Parent != null)
-                    CurrentDirectory = CurrentDirectory.Parent;
+                    CurrentDirectory = (Directory)CurrentDirectory.Parent;
             }
             else if (path == null)
             {
@@ -678,7 +734,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
                         return;
                     }
-                    CurrentDirectory.AddChild(new File(_Name, "", "", true, _DirectoryNode));
+                    CurrentDirectory.AddChild(new File(_Name, islink: true, link: _DirectoryNode));
 
                 }
             }
@@ -715,7 +771,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 if (_DirectoryNode is File targetFile)
                 {
-                    var hardLink = new File(_Name, targetFile.FileType, targetFile.Content, targetFile.IsLink, targetFile.Link)
+                    var hardLink = new File(_Name, fileType: targetFile.FileType, content: targetFile.Content, islink: targetFile.IsLink, link: targetFile.Link)
                     {
                         Permissions = targetFile.Permissions
                     };
@@ -744,7 +800,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 Feature.AddToCommandList($"Name : {_Directory.Name}", rchCommandLine, false);
                 Feature.AddToCommandList("Type : Directory", rchCommandLine, false);
                 Feature.AddToCommandList($"Size : {_Directory.CountChild()}", rchCommandLine, false);
-                Feature.AddToCommandList($"CreationTime : {_Directory.CreationTime}", rchCommandLine, false);
+                Feature.AddToCommandList($"CreationTime : {_Directory.Timestamp}", rchCommandLine, false);
                 Feature.AddToCommandList($"Permissions : {_Directory.Permissions}", rchCommandLine, false);
                 return;
             }
@@ -755,7 +811,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     Feature.AddToCommandList($"Name : {_File.Name}", rchCommandLine, false);
                     Feature.AddToCommandList("Type : Link", rchCommandLine, false);
                     Feature.AddToCommandList($"Type : {_File.Size}", rchCommandLine, false);
-                    Feature.AddToCommandList($"CreationTime : {_File.CreationTime}", rchCommandLine, false);
+                    Feature.AddToCommandList($"CreationTime : {_File.Timestamp}", rchCommandLine, false);
                     Feature.AddToCommandList($"Permissions : {_File.Permissions}", rchCommandLine, false);
                     return;
                 }
@@ -764,7 +820,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     Feature.AddToCommandList($"Name : {_File.Name}", rchCommandLine, false);
                     Feature.AddToCommandList("Type : File", rchCommandLine, false);
                     Feature.AddToCommandList($"Type : {_File.Size}", rchCommandLine, false);
-                    Feature.AddToCommandList($"CreationTime : {_File.CreationTime}", rchCommandLine, false);
+                    Feature.AddToCommandList($"CreationTime : {_File.Timestamp}", rchCommandLine, false);
                     Feature.AddToCommandList($"Permissions : {_File.Permissions}", rchCommandLine, false);
                     return;
                 }
@@ -810,7 +866,7 @@ namespace VirtualFileSystemSimulatorWinForm
             while (temp != null && temp.Name != "/")
             {
                 _PathStack.Push(temp.Name);
-                temp = temp.Parent;
+                temp = (Directory)temp.Parent;
             }
 
             // Combine parts
@@ -942,11 +998,13 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 File file = (File)CurrentDirectory.FindChild(_FirstFileName);
                 _SecondDirectory.AddChild(file);
+                file.Parent = _SecondDirectory;
                 CurrentDirectory.RemoveChild(inputs[1].Trim().Split('/').ToArray().Last());
             }
             else if (_FirstFileName == null && _SecondFileName == null)
             {
                 _SecondDirectory.AddChild(_FirstDirectory);
+                _FirstDirectory.Parent = _SecondDirectory;
                 CurrentDirectory.RemoveChild(inputs[1].Trim().Split('/').ToArray().Last());
             }
             else if (_FirstDirectoryPath == null)
