@@ -21,10 +21,9 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             InitializeComponent();
         }
-        //برای کل برنامه
-        public SystemFile fs = new SystemFile();
-        public Features features = new Features();
-        public bool IsFirstUp = true;
+        public SystemFile Fs = new SystemFile();
+        public Features Feature = new Features();
+        public bool IsFirstUpKey = true;
         public Stack<string> FirstAllCommand = new Stack<string>();
         public Stack<string> LastAllCommand = new Stack<string>();
         private void txtCommandLine_KeyDown(object sender, KeyEventArgs e)
@@ -36,11 +35,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 // برای جلوگیری از صدای سیستم هنگامی که اینتر را می زنیم
                 e.SuppressKeyPress = true;
                 Input = txtCommandLine.Text;
-                features.AddToCommandList(Input, rchCommandList);
+                Feature.AddToCommandList(Input, rchCommandList);
                 AnalizeInput(Input);
                 txtCommandLine.Text = string.Empty;
                 LastCommands = string.Empty;
-                IsFirstUp = true;
+                IsFirstUpKey = true;
             }
             //دستور هایی از قبل
             if (e.KeyCode == Keys.Up)
@@ -50,7 +49,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 try
                 {
-                    if (IsFirstUp)
+                    if (IsFirstUpKey)
                     {
                         FirstAllCommand.Clear();
                         LastAllCommand.Clear();
@@ -66,7 +65,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
                     LastAllCommand.Push(FirstAllCommand.Pop());
                     txtCommandLine.Text = LastAllCommand.Peek();
-                    IsFirstUp = false;
+                    IsFirstUpKey = false;
                 }
                 catch (Exception)
                 {
@@ -82,7 +81,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 try
                 {
-                    if (!IsFirstUp)
+                    if (!IsFirstUpKey)
                     {
                         FirstAllCommand.Push(LastAllCommand.Pop());
                         txtCommandLine.Text = FirstAllCommand.Peek();
@@ -102,7 +101,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 try
                 {
-                    features.AutoCompleteCommand(txtCommandLine);
+                    Feature.AutoCompleteCommand(txtCommandLine);
                 }
                 catch (Exception)
                 {
@@ -160,10 +159,10 @@ namespace VirtualFileSystemSimulatorWinForm
                     Cp_Command(InputArray, rchCommandList, TreeView);
                     break;
                 default:
-                    features.AddToCommandList("Syntax Error", rchCommandList, false);
+                    Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
             }
-            UpdateCurrentRoute(fs.CurrentDirectory, txtCurrentRoute);
+            UpdateCurrentRoute(Fs.CurrentDirectory, txtCurrentRoute);
             rchCommandList.ScrollToCaret();
         }
 
@@ -175,15 +174,15 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Mkdir_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 2, 3, rchCommandList))
+            if (Feature.CheckLength(Inputs, 2, 3, rchCommandList))
             {
                 if (Inputs[1] == "-p")
                 {
-                    fs.CreateDirectory(Inputs[2], true, commandList);
+                    Fs.Mkdir(Inputs[2], true, commandList);
                 }
                 else
                 {
-                    fs.CreateDirectory(Inputs[1], false, commandList);
+                    Fs.Mkdir(Inputs[1], false, commandList);
                 }
                 UpdateTreeView(treeView);
                 //// منطق دستور mkdir
@@ -192,16 +191,16 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Touch_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 2, 3, rchCommandList))
+            if (Feature.CheckLength(Inputs, 2, 3, rchCommandList))
             {
                 if (Inputs[1] == "-t")
                 {
                     string dateTime = Inputs[2] + " " + Inputs[3];
-                    fs.CreateFile(Inputs[4], commandList, dateTime);
+                    Fs.Touch(Inputs[4], commandList, dateTime);
                 }
                 else
                 {
-                    fs.CreateFile(Inputs[1], commandList);
+                    Fs.Touch(Inputs[1], commandList);
                 }
                 UpdateTreeView(treeView);
             }
@@ -209,48 +208,48 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Echo_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 3, 6, rchCommandList))
+            if (Feature.CheckLength(Inputs, 3, 6, rchCommandList))
             {
                 string dateTime = null;
                 if (Inputs.Length > 6 && Inputs[3] == "-t")
                 {
                     dateTime = Inputs[4] + " " + Inputs[5];
                 }
-                fs.Echo(Inputs[2], Inputs[1].Trim('\"'), fs.CurrentDirectory, commandList, dateTime);
+                Fs.Echo(Inputs[2], Inputs[1].Trim('\"'), Fs.CurrentDirectory, commandList, dateTime);
                 UpdateTreeView(treeView);
             }
 
         }
         public void Cat_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 2, 2, rchCommandList))
+            if (Feature.CheckLength(Inputs, 2, 2, rchCommandList))
             {
-                fs.Cat(Inputs[1], commandList);
+                Fs.Cat(Inputs[1], commandList);
                 UpdateTreeView(treeView);
             }
 
         }
         public void Mv_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 3, 3, rchCommandList))
+            if (Feature.CheckLength(Inputs, 3, 3, rchCommandList))
             {
-                fs.Mv(Inputs, commandList);
+                Fs.Mv(Inputs, commandList);
                 UpdateTreeView(treeView);
             }
 
         }
         public void Cp_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 3, 3, rchCommandList))
+            if (Feature.CheckLength(Inputs, 3, 3, rchCommandList))
             {
-                fs.Cp(Inputs, commandList);
+                Fs.Cp(Inputs, commandList);
                 UpdateTreeView(treeView);
             }
 
         }
         public void Ls_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 1, 4, rchCommandList))
+            if (Feature.CheckLength(Inputs, 1, 4, rchCommandList))
             {
                 bool MoreInfo = false;
                 bool ShowHidden = false;
@@ -266,7 +265,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         path = input;
 
 
-                features.AddToCommandList(fs.LsShow(rchCommandList, path, MoreInfo, ShowHidden), rchCommandList, false);
+                Feature.AddToCommandList(Fs.Ls(rchCommandList, path, MoreInfo, ShowHidden), rchCommandList, false);
 
                 UpdateTreeView(treeView);
             }
@@ -274,16 +273,16 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Cd_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 1, 2, rchCommandList))
+            if (Feature.CheckLength(Inputs, 1, 2, rchCommandList))
             {
                 if (Inputs.Length == 2)
                 {
-                    fs.Cd(rchCommandList, Inputs[1]);
+                    Fs.Cd(rchCommandList, Inputs[1]);
                 }
                 else
                 {
                     //رفتن به ROOT
-                    fs.Cd(rchCommandList);
+                    Fs.Cd(rchCommandList);
                 }
             }
             UpdateTreeView(treeView);
@@ -291,7 +290,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Rm_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 2, 4, rchCommandList))
+            if (Feature.CheckLength(Inputs, 2, 4, rchCommandList))
             {
                 bool IsRecursive = false;
                 bool IsForce = false;
@@ -310,37 +309,37 @@ namespace VirtualFileSystemSimulatorWinForm
                         IsForce = true;
                 }
                 Name = Inputs[Inputs.Length - 1];
-                fs.Rm(rchCommandList, Name, IsRecursive, IsForce);
+                Fs.Rm(rchCommandList, Name, IsRecursive, IsForce);
             }
             UpdateTreeView(treeView);
 
         }
         public void Usertype_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 1, 2, rchCommandList))
+            if (Feature.CheckLength(Inputs, 1, 2, rchCommandList))
             {
                 if (Inputs.Length == 1)
                 {
-                    features.AddToCommandList(fs.ShowUserType().ToString(), rchCommandList, false);
+                    Feature.AddToCommandList(Fs.ShowUserType().ToString(), rchCommandList, false);
                 }
                 else
                 {
                     switch (Inputs[1])
                     {
                         case "owner":
-                            fs.ChangeUserType(SystemFile.UserType.owner);
-                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            Fs.ChangeUserType(SystemFile.UserType.Owner);
+                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
                             break;
                         case "group":
-                            fs.ChangeUserType(SystemFile.UserType.group);
-                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            Fs.ChangeUserType(SystemFile.UserType.Group);
+                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
                             break;
                         case "others":
-                            fs.ChangeUserType(SystemFile.UserType.others);
-                            features.AddToCommandList($"Change is succsesfully! \nNow your user is {fs.ShowUserType().ToString()}", rchCommandList, false);
+                            Fs.ChangeUserType(SystemFile.UserType.Others);
+                            Feature.AddToCommandList($"Change is succsesfully! \nNow your user is {Fs.ShowUserType().ToString()}", rchCommandList, false);
                             break;
                         default:
-                            features.AddToCommandList("Not found your user type", rchCommandList, false);
+                            Feature.AddToCommandList("Not found your user type", rchCommandList, false);
                             break;
                     }
                 }
@@ -350,7 +349,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void Tree_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 1, 4, commandList))
+            if (Feature.CheckLength(Inputs, 1, 4, commandList))
             {
                 int? deep = null; // استفاده از nullable برای حالت پیش‌فرض
                 string path = null;
@@ -364,7 +363,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
                         if (string.IsNullOrEmpty(numberPart))
                         {
-                            features.AddToCommandList("Invalid format for -n parameter. Use: -n<number>", commandList, false);
+                            Feature.AddToCommandList("Invalid format for -n parameter. Use: -n<number>", commandList, false);
                             return;
                         }
 
@@ -374,7 +373,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         }
                         else
                         {
-                            features.AddToCommandList($"Invalid depth value: {numberPart}. Depth must be a positive number.", commandList, false);
+                            Feature.AddToCommandList($"Invalid depth value: {numberPart}. Depth must be a positive number.", commandList, false);
                             return;
                         }
                     }
@@ -385,32 +384,32 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
 
                 // فراخوانی تابع Tree با پارامترهای استخراج شده
-                string treeResult = fs.Tree(commandList, path, null, "", true, deep, 0);
-                features.AddToCommandList(treeResult, commandList, false);
+                string treeResult = Fs.Tree(commandList, path, null, "", true, deep, 0);
+                Feature.AddToCommandList(treeResult, commandList, false);
             }
             UpdateTreeView(treeView);
         }
         public void Ln_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 3, 4, commandList))
+            if (Feature.CheckLength(Inputs, 3, 4, commandList))
             {
-                fs.Ln(rchCommandList, Inputs);
+                Fs.Ln(rchCommandList, Inputs);
             }
             UpdateTreeView(treeView);
         }
         public void Stat_Command(string[] Inputs, RichTextBox commandList, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 2, 3, commandList))
+            if (Feature.CheckLength(Inputs, 2, 3, commandList))
             {
-                fs.Stat(rchCommandList, Inputs);
+                Fs.Stat(rchCommandList, Inputs);
             }
             UpdateTreeView(treeView);
         }
         public void Pwd_Command(string[] Inputs, System.Windows.Forms.TreeView treeView)
         {
-            if (features.CheckLength(Inputs, 1, 1, rchCommandList))
+            if (Feature.CheckLength(Inputs, 1, 1, rchCommandList))
             {
-                fs.Pwd(fs.CurrentDirectory, rchCommandList);
+                Fs.Pwd(Fs.CurrentDirectory, rchCommandList);
             }
             UpdateTreeView(treeView);
 
@@ -509,7 +508,7 @@ namespace VirtualFileSystemSimulatorWinForm
             treeview.BeginUpdate();
             treeview.Nodes.Clear();
 
-            BuildTreeView(fs.Root, treeview.Nodes);
+            BuildTreeView(Fs.Root, treeview.Nodes);
 
             treeview.ExpandAll(); // برای باز کردن همه گره‌ها
             treeview.EndUpdate();

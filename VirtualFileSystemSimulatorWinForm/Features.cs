@@ -23,6 +23,8 @@ namespace VirtualFileSystemSimulatorWinForm
                 rchCommandList.ScrollToCaret();
             }
         }
+
+        //باید درست و بهینه شود
         public void AutoCompleteCommand(TextBox txtCommandLine)
         {
             DateTime dateTime = DateTime.Now;

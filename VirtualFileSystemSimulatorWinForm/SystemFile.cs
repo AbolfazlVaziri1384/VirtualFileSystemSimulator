@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using static VirtualFileSystemSimulatorWinForm.Form1;
 
 namespace VirtualFileSystemSimulatorWinForm
 {
@@ -14,50 +10,29 @@ namespace VirtualFileSystemSimulatorWinForm
     {
         public Directory Root { get; private set; }
         public Directory CurrentDirectory { get; private set; }
-        public Features features = new Features();
-        public UserType _UserType = UserType.owner;
+        public Features Feature = new Features();
+        public UserType CurrentUserType = UserType.Owner;
 
         public SystemFile()
         {
             Root = new Directory("/");
             CurrentDirectory = Root;
         }
-        public enum UserType { owner, group, others }
-        public void ChangeUserType(UserType userType)
+        public enum UserType { Owner, Group, Others }
+
+        // For Change User Type
+        public void ChangeUserType(UserType usertype)
         {
-            _UserType = userType;
+            CurrentUserType = usertype;
         }
+
+        // For Show User Type 
         public UserType ShowUserType()
         {
-            return _UserType;
+            return CurrentUserType;
         }
-        // پیاده‌سازی دستور cd
-        public void ChangeDirectory(string path, RichTextBox rchCommandLine)
-        {
-            if (string.IsNullOrEmpty(path) || path == "/")
-            {
-                CurrentDirectory = Root;
-                return;
-            }
 
-            if (path == "..")
-            {
-                if (CurrentDirectory.Parent != null)
-                    CurrentDirectory = CurrentDirectory.Parent;
-                return;
-            }
-
-            var target = ResolvePath(path, rchCommandLine);
-            if (target is Directory directory)
-            {
-                CurrentDirectory = directory;
-            }
-            else
-            {
-                features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
-            }
-        }
-        // تابع جدید برای مدیریت مسیرهای حاوی .. و .
+        // For managing ".." or "." in the path
         private void NormalizePath(ref string path)
         {
             if (path.StartsWith(".."))
@@ -71,481 +46,445 @@ namespace VirtualFileSystemSimulatorWinForm
                 path = path.Substring(2);
             }
         }
-        // پیاده‌سازی دستور mkdir
-        public void CreateDirectory(string path, bool createParents, RichTextBox rchCommandLine)
+
+        // For making directory
+        public void Mkdir(string path, bool createparents, RichTextBox rchCommandLine)
         {
             if (string.IsNullOrEmpty(path))
-                features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
-            if (createParents)
+                Feature.AddToCommandList("Path cannot be empty", rchCommandLine, false);
+
+            if (createparents)
                 NormalizePath(ref path);
-            // جدا کردن مسیر به بخش‌ها
+
             var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
 
             if (path.StartsWith("/"))
             {
-                // مسیر مطلق - از ریشه شروع کن
-                CreateDirectoryRecursive(Root, parts, 0, createParents, rchCommandLine);
+                // Absolute path
+                CreateDirectory(Root, parts, 0, createparents, rchCommandLine);
             }
             else
             {
-                // مسیر نسبی - از دایرکتوری جاری شروع کن
-                CreateDirectoryRecursive(CurrentDirectory, parts, 0, createParents, rchCommandLine);
+                // Relative path
+                CreateDirectory(CurrentDirectory, parts, 0, createparents, rchCommandLine);
             }
         }
 
-        private void CreateDirectoryRecursive(Directory current, string[] parts, int index, bool createParents, RichTextBox rchCommandLine)
+        // For Create Directory
+        private void CreateDirectory(Directory current, string[] parts, int index, bool createparents, RichTextBox rchCommandLine)
         {
-            // اگر به انتهای مسیر رسیدیم
             if (index >= parts.Length)
-                //اگر اروری برای تکراری بودن نام پوشه در 239 کار نکرد از این استفاده کن
-                //AddToCommandList($"'{currentPart}' already exists as a Directory", rchCommandLine, false);
                 return;
 
-            string currentPart = parts[index];
+            string _CurrentPart = parts[index];
 
-            // بررسی وجود گره با همین نام
-            var existingNode = current.FindChild(currentPart);
+            // Is exist name ?
+            var _ExistingNode = current.FindChild(_CurrentPart);
 
-            if (existingNode != null)
+            if (_ExistingNode != null)
             {
-                if (existingNode is Directory existingDir)
+                if (_ExistingNode is Directory _ExistingDirectory)
                 {
-                    // دایرکتوری از قبل وجود دارد - به قسمت بعدی برو
-                    CreateDirectoryRecursive(existingDir, parts, index + 1, createParents, rchCommandLine);
+                    // Is Exist directory and go next part
+                    CreateDirectory(_ExistingDirectory, parts, index + 1, createparents, rchCommandLine);
                     if (index >= parts.Length - 1)
-                        features.AddToCommandList($"'{currentPart}' already exists as a Directory", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_CurrentPart}' already exists as a directory", rchCommandLine, false);
                 }
                 else
                 {
-                    // یک فایل با همین نام وجود دارد - خطا
-                    features.AddToCommandList($"'{currentPart}' is already exists as a file", rchCommandLine, false);
-
+                    Feature.AddToCommandList($"'{_CurrentPart}' is already exists as a file", rchCommandLine, false);
                 }
             }
             else
             {
                 if (index == parts.Length - 1)
                 {
-                    // این آخرین بخش مسیر است - دایرکتوری جدید ایجاد کن
-                    var newDir = new Directory(currentPart, current);
-                    current.AddChild(newDir);
-                    CurrentDirectory = newDir;
+                    var _NewDirectory = new Directory(_CurrentPart, current);
+                    current.AddChild(_NewDirectory);
+                    CurrentDirectory = _NewDirectory;
                 }
                 else
                 {
-                    if (createParents)
+                    if (createparents)
                     {
-                        // ایجاد دایرکتوری‌های والد به صورت خودکار
-                        var newDir = new Directory(currentPart, current);
-                        current.AddChild(newDir);
-                        //CurrentDirectory = current;
-                        CreateDirectoryRecursive(newDir, parts, index + 1, createParents, rchCommandLine);
-                        //CurrentDirectory = current;
+                        var _NewDirectory = new Directory(_CurrentPart, current);
+                        current.AddChild(_NewDirectory);
+                        CreateDirectory(_NewDirectory, parts, index + 1, createparents, rchCommandLine);
                     }
                     else
                     {
-                        // دایرکتوری والد وجود ندارد و createParents=false - خط
-
-                        features.AddToCommandList($"Parent directory '{currentPart}' does not exist. Use -p to create parent directories.", rchCommandLine, false);
-
+                        Feature.AddToCommandList($"Parent directory '{_CurrentPart}' does not exist. Use -p to create parent directories.", rchCommandLine, false);
                     }
                 }
             }
         }
 
-        // پیاده‌سازی دستور touch
-        public void CreateFile(string path, RichTextBox rchCommandLine, string customTime = null, string content = null)
+        // For making file
+        public void Touch(string pathandfilename, RichTextBox rchCommandLine, string customtime = null, string content = null)
         {
             try
             {
-                if (string.IsNullOrEmpty(path))
-                    features.AddToCommandList("Path cannot be empty", rchCommandLine, false);
+                if (string.IsNullOrEmpty(pathandfilename))
+                    Feature.AddToCommandList("Path cannot be empty", rchCommandLine, false);
 
-                // جدا کردن مسیر به دایرکتوری والد و نام فایل
-                // برای مثال /user/ali/report.txt
-                string directoryPath = GetDirectoryPath(path);
-                string fileName = GetFileName(path);
+                string _DirectoryPath = GetDirectoryPath(pathandfilename);
+                string _FileName = GetFileName(pathandfilename);
 
-                // پیدا کردن دایرکتوری والد
-                Directory parentDir;
-                if (directoryPath == ".")
+                Directory _ParentDirectory;
+                if (_DirectoryPath == ".")
                 {
-                    parentDir = CurrentDirectory;
+                    _ParentDirectory = CurrentDirectory;
                 }
                 else
                 {
-                    var dirNode = ResolvePath(directoryPath, rchCommandLine);
-                    if (dirNode is Directory directory)
+                    var _DirectoryNode = ResolvePath(_DirectoryPath, rchCommandLine);
+                    if (_DirectoryNode is Directory _Directory)
                     {
-                        parentDir = directory;
+                        _ParentDirectory = _Directory;
                     }
                     else
                     {
-                        features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_DirectoryPath}' is not a directory", rchCommandLine, false);
                         return;
                     }
                 }
-                if (!fileName.StartsWith("."))
+                if (!_FileName.StartsWith("."))
                 {
-                    //برای فایل های قابل نمایش
-                    // بررسی وجود فایل/دایرکتوری با همین نام
-                    if (parentDir.FindChild(fileName.Split('.')[0]) != null)
+                    // Check existing for hiden file
+                    if (_ParentDirectory.FindChild(_FileName.Split('.')[0]) != null)
                     {
-                        features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_FileName}' already exists", rchCommandLine, false);
                         return;
                     }
                 }
                 else
                 {
-                    //برای فایل های غیر قابل نمایش
-                    // بررسی وجود فایل/دایرکتوری با همین نام
-                    if (parentDir.FindChild(fileName.Split('.')[1]) != null)
+                    // Check existing for normal file
+                    if (_ParentDirectory.FindChild(_FileName.Split('.')[1]) != null)
                     {
-                        features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_FileName}' already exists", rchCommandLine, false);
                         return;
                     }
                 }
 
-                // ایجاد فایل جدید
-                string fileExtension = Path.GetExtension(fileName).TrimStart('.');
-                if (string.IsNullOrEmpty(fileExtension))
-                    fileExtension = "txt";
-                File newFile;
-                if (!fileName.StartsWith("."))
+                // Making new file
+                string _FileExtension = Path.GetExtension(_FileName).TrimStart('.');
+                if (string.IsNullOrEmpty(_FileExtension))
+                    _FileExtension = "txt";
+
+                File _NewFile;
+                if (!_FileName.StartsWith("."))
                 {
-                    //برای فایل های قابل نمایش
-                    newFile = new File(fileName.Split('.')[0], fileExtension);
+                    // For files we can show there
+                    _NewFile = new File(_FileName.Split('.')[0], _FileExtension);
                 }
                 else
                 {
-                    //برای فایل های غیر قابل نمایش
-                    newFile = new File("." + fileName.Split('.')[1], fileExtension);
+                    // For files we can not show there
+                    _NewFile = new File("." + _FileName.Split('.')[1], _FileExtension);
                 }
-                // تنظیم زمان در صورت وجود
-                if (!string.IsNullOrEmpty(customTime))
+                // Add custom time if it exist
+                if (!string.IsNullOrEmpty(customtime))
                 {
-                    newFile.CreationTime = customTime;
+                    _NewFile.CreationTime = customtime;
                 }
-                // تنظیم متن در صورت وجود
+                // Add text if it exist
                 if (!string.IsNullOrEmpty(content))
                 {
-                    newFile.Content = content;
+                    _NewFile.Content = content;
                 }
 
-                parentDir.AddChild(newFile);
+                _ParentDirectory.AddChild(_NewFile);
             }
-            catch (Exception ex)
+            catch
             {
-                features.AddToCommandList("Your command is invalide", rchCommandLine, false);
+                Feature.AddToCommandList("Your command is invalide", rchCommandLine, false);
             }
         }
 
-        // تابع کمکی برای استخراج مسیر دایرکتوری از مسیر کامل
-        private string GetDirectoryPath(string fullPath)
+        // Extraction path from "path + file name"
+        private string GetDirectoryPath(string fullpath)
         {
-            if (fullPath == null)
+            if (fullpath == null)
                 return ".";
-            if (fullPath.Contains('/'))
+            if (fullpath.Contains('/'))
             {
-                int lastSlash = fullPath.LastIndexOf('/');
-                return fullPath.Substring(0, lastSlash);
+                int _LastSlash = fullpath.LastIndexOf('/');
+                return fullpath.Substring(0, _LastSlash);
             }
             else
             {
-                return "."; // مسیر جاری
+                // Current path
+                return ".";
             }
         }
 
-        // تابع کمکی برای استخراج نام فایل از مسیر کامل
-        private string GetFileName(string fullPath)
+        // Extraction file name from "path + file name"
+        private string GetFileName(string fullpath)
         {
-            if (fullPath.Contains('/'))
+            if (fullpath.Contains('/'))
             {
-                int lastSlash = fullPath.LastIndexOf('/');
-                return fullPath.Substring(lastSlash + 1);
+                int _LastSlash = fullpath.LastIndexOf('/');
+                return fullpath.Substring(_LastSlash + 1);
             }
             else
             {
-                return fullPath;
+                return fullpath;
             }
         }
 
-        // تابع کمکی برای حل مسیر
+        // For detect Relative or Absolute path
         private Node ResolvePath(string path, RichTextBox rchCommandLine)
         {
             if (path.StartsWith("/"))
             {
-                // مسیر مطلق - از ریشه شروع کن
+                // Absolute path
                 return ResolveAbsolutePath(path, rchCommandLine);
             }
             else
             {
-                // مسیر نسبی - از دایرکتوری جاری شروع کن
+                // Relative path
                 return ResolveRelativePath(path, rchCommandLine);
             }
         }
 
         private Node ResolveAbsolutePath(string path, RichTextBox rchCommandLine)
         {
-            var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
-            int Count = 1;
-            var current = Root;
+            var _Parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            int _Count = 1;
+            var _Current = Root;
 
-            foreach (var part in parts)
+            foreach (var _Part in _Parts)
             {
-                if (part == "..")
+                if (_Part == "..")
                 {
-                    if (current.Parent != null)
+                    if (_Current.Parent != null)
                     {
-                        current = current.Parent;
-                        Count++;
+                        _Current = _Current.Parent;
+                        _Count++;
                     }
                     continue;
                 }
 
-                if (part == ".")
+                if (_Part == ".")
                 {
-                    Count++;
+                    _Count++;
                     continue;
                 }
 
-                var child = current.FindChild(part);
-                if (child is Directory dir)
+                var _Child = _Current.FindChild(_Part);
+                if (_Child is Directory dir)
                 {
-                    current = dir;
+                    _Current = dir;
                 }
-                else if (Count == parts.Length)
+                else if (_Count == _Parts.Length)
                 {
 
                 }
-                else if (child != null)
+                else if (_Child != null)
                 {
-                    return child;
+                    return _Child;
                 }
                 else
                 {
-                    features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
                     return null;
                 }
             }
 
-            return current;
+            return _Current;
         }
 
         private Node ResolveRelativePath(string path, RichTextBox rchCommandLine)
         {
-            // مشابه بالا اما از CurrentDirectory شروع می‌کند
-            var parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
-            var current = CurrentDirectory;
+            var _Parts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            var _Current = CurrentDirectory;
 
-            // بقیه کد مشابه ResolveAbsolutePath
-            foreach (var part in parts)
+            foreach (var part in _Parts)
             {
                 if (part == "..")
                 {
-                    if (current.Parent != null)
-                        current = current.Parent;
+                    if (_Current.Parent != null)
+                        _Current = _Current.Parent;
                     continue;
                 }
 
                 if (part == ".")
                     continue;
 
-                var child = current.FindChild(part);
-                if (child is Directory dir)
+                var _Child = _Current.FindChild(part);
+                if (_Child is Directory dir)
                 {
-                    current = dir;
+                    _Current = dir;
                 }
-                else if (child != null)
+                else if (_Child != null)
                 {
-                    return child;
+                    return _Child;
                 }
                 else
                 {
-                    features.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Path not found: {path}", rchCommandLine, false);
                     return null;
                 }
             }
-            return current;
+            return _Current;
         }
-        //public void ListDirectory(string path = null)
-        //{
-        //    Directory target;
-        //    if (string.IsNullOrEmpty(path))
-        //    {
-        //        target = CurrentDirectory;
-        //    }
-        //    else
-        //    {
-        //        var node = ResolvePath(path);
-        //        if (node is Directory dir)
-        //            target = dir;
-        //        else
-        //            throw new Exception($"'{path}' is not a directory");
-        //    }
 
-        //    foreach (var child in target.Children)
-        //    {
-        //        if (child is Directory)
-        //            Console.WriteLine($"[DIR]  {child.Name}");
-        //        else
-        //            Console.WriteLine($"[FILE] {child.Name}");
-        //    }
-        //}
-
-        public string Tree(RichTextBox rchCommandLine, string path = null, Directory dir = null,
-                  string indent = "", bool isLast = true, int? maxDepth = null, int currentDepth = 0)
+        // For making and show tree
+        public string Tree(RichTextBox rchCommandLine, string path = null, Directory directory = null,
+                  string indent = "", bool islast = true, int? maxdepth = null, int currentdepth = 0)
         {
-            Directory targetDir = dir;
+            Directory _TargetDirectory = directory;
 
             if (path != null)
             {
-                var dirNode = ResolvePath(path, rchCommandLine);
-                if (dirNode is Directory directoryFromPath)
+                var _DirectoryNode = ResolvePath(path, rchCommandLine);
+                if (_DirectoryNode is Directory directoryFromPath)
                 {
-                    targetDir = directoryFromPath;
+                    _TargetDirectory = directoryFromPath;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
                     return string.Empty;
                 }
             }
-            else if (targetDir == null)
+            else if (_TargetDirectory == null)
             {
-                targetDir = CurrentDirectory;
+                _TargetDirectory = CurrentDirectory;
             }
 
-            if (targetDir == null)
+            if (_TargetDirectory == null)
             {
                 return string.Empty;
             }
 
-            // بررسی اگر به حداکثر عمق مجاز رسیده باشیم
-            if (maxDepth.HasValue && currentDepth > maxDepth.Value)
+            // Check depth
+            if (maxdepth.HasValue && currentdepth > maxdepth.Value)
             {
                 return string.Empty;
             }
 
-            string tree = string.Empty;
+            string _Tree = string.Empty;
 
-            tree += indent;
-            tree += isLast ? "└── " : "├── ";
-            tree += targetDir.Name + "\n";
+            _Tree += indent;
+            _Tree += islast ? "└── " : "├── ";
+            _Tree += _TargetDirectory.Name + "\n";
 
-            // اگر به عمق مجاز رسیده باشیم، فرزندان را نمایش ندهیم
-            if (maxDepth.HasValue && currentDepth == maxDepth.Value)
+            // Check depth
+            if (maxdepth.HasValue && currentdepth == maxdepth.Value)
             {
-                return tree;
+                return _Tree;
             }
 
-            // مرتب‌سازی فرزندان برای نمایش مرتب‌تر
-            var sortedChildren = targetDir.Children.OrderBy(c => c.Name).ToList();
+            var _SortedChildren = _TargetDirectory.Children.OrderBy(c => c.Name).ToList();
 
-            for (int i = 0; i < sortedChildren.Count; i++)
+            for (int i = 0; i < _SortedChildren.Count; i++)
             {
-                var child = sortedChildren[i];
-                bool isLastChild = i == sortedChildren.Count - 1;
+                var _Child = _SortedChildren[i];
+                bool _IsLastChild = i == _SortedChildren.Count - 1;
 
-                string childIndent = indent + (isLast ? "    " : "│   ");
+                string _ChildIndent = indent + (islast ? "    " : "│   ");
 
-                if (child is Directory childDirectory)
+                if (_Child is Directory childDirectory)
                 {
-                    if (childDirectory != targetDir) // جلوگیری از خودارجاعی ساده
+                    if (childDirectory != _TargetDirectory)
                     {
-                        tree += Tree(rchCommandLine, null, childDirectory, childIndent, isLastChild, maxDepth, currentDepth + 1);
+                        _Tree += Tree(rchCommandLine, null, childDirectory, _ChildIndent, _IsLastChild, maxdepth, currentdepth + 1);
                     }
                 }
                 else
                 {
-                    tree += childIndent;
-                    tree += isLastChild ? "└── " : "├── ";
-                    File file = (File)child;
+                    _Tree += _ChildIndent;
+                    _Tree += _IsLastChild ? "└── " : "├── ";
+                    File file = (File)_Child;
 
                     if (!string.IsNullOrEmpty(file.FileType))
                     {
-                        tree += file.Name + "." + file.FileType + "\n";
+                        _Tree += file.Name + "." + file.FileType + "\n";
                     }
                     else
                     {
-                        tree += file.Name + "\n";
+                        _Tree += file.Name + "\n";
                     }
                 }
             }
-            return tree;
+            return _Tree;
         }
-        public string LsShow(RichTextBox rchCommandLine, string Path = null, bool MoreInfo = false, bool ShowHidden = false)
+
+        // For show all file and directory in the specifided path
+        public string Ls(RichTextBox rchCommandLine, string path = null, bool moreinfo = false, bool showhidden = false)
         {
 
-            // پیدا کردن دایرکتوری والد
-            Directory parentDir;
-            if (Path == null)
+            Directory _ParentDirectory;
+            if (path == null)
             {
-                parentDir = CurrentDirectory;
+                _ParentDirectory = CurrentDirectory;
             }
             else
             {
-                var dirNode = ResolvePath(Path, rchCommandLine);
-                if (dirNode is Directory directory)
+                var _DirectoryNode = ResolvePath(path, rchCommandLine);
+                if (_DirectoryNode is Directory directory)
                 {
-                    parentDir = directory;
+                    _ParentDirectory = directory;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{Path}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
                     return null;
                 }
             }
-            string FilesOrFolders = "";
-            // مرتب‌سازی فرزندان برای نمایش مرتب‌تر
-            var sortedChildren = parentDir.Children.OrderBy(c => c.Name).ToList();
+            string _FilesOrFolders = "";
+            var _SortedChildren = _ParentDirectory.Children.OrderBy(c => c.Name).ToList();
 
-            for (int i = 0; i < sortedChildren.Count; i++)
+            for (int i = 0; i < _SortedChildren.Count; i++)
             {
-                var child = sortedChildren[i];
-                if (ShowHidden)
+                var _Child = _SortedChildren[i];
+                if (showhidden)
                 {
-                    if (child is Directory dir)
+                    if (_Child is Directory dir)
                     {
-                        if (MoreInfo)
-                            FilesOrFolders += child.CreationTime + "    " + child.Permissions + "    " + child.Name + "\n";
+                        if (moreinfo)
+                            _FilesOrFolders += _Child.CreationTime + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
                         else
-                            FilesOrFolders += child.Name + "    ";
+                            _FilesOrFolders += _Child.Name + "    ";
                     }
                     else
                     {
 
-                        File file = (File)child;
-                        if (MoreInfo)
-                            FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                        File file = (File)_Child;
+                        if (moreinfo)
+                            _FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
                         else
-                            FilesOrFolders += file.Name + "." + file.FileType + "    ";
+                            _FilesOrFolders += file.Name + "." + file.FileType + "    ";
                     }
 
                 }
-                else if (!child.Name.StartsWith("."))
+                else if (!_Child.Name.StartsWith("."))
                 {
-                    if (child is Directory dir)
+                    if (_Child is Directory dir)
                     {
-                        if (MoreInfo)
-                            FilesOrFolders += child.CreationTime + "    " + child.Permissions + "    " + child.Name + "\n";
+                        if (moreinfo)
+                            _FilesOrFolders += _Child.CreationTime + "    " + _Child.Permissions + "    " + _Child.Name + "\n";
                         else
-                            FilesOrFolders += child.Name + "    ";
+                            _FilesOrFolders += _Child.Name + "    ";
                     }
                     else
                     {
 
-                        File file = (File)child;
-                        if (MoreInfo)
-                            FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
+                        File file = (File)_Child;
+                        if (moreinfo)
+                            _FilesOrFolders += file.CreationTime + "    " + file.Permissions + "    " + file.Name + "." + file.FileType + "\n";
                         else
-                            FilesOrFolders += file.Name + "." + file.FileType + "    ";
+                            _FilesOrFolders += file.Name + "." + file.FileType + "    ";
                     }
 
                 }
             }
-            return FilesOrFolders;
+            return _FilesOrFolders;
         }
+
+        // For go to specifided path
         public void Cd(RichTextBox rchCommandLine, string path = null)
         {
             if (path == "..")
@@ -559,92 +498,95 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             else
             {
-                Directory parentDir;
+                Directory _ParentDirectory;
                 if (path == null)
                 {
-                    parentDir = CurrentDirectory;
+                    _ParentDirectory = CurrentDirectory;
                 }
                 else
                 {
-                    var dirNode = ResolvePath(path, rchCommandLine);
-                    if (dirNode is Directory directory)
+                    var _DirectoryNode = ResolvePath(path, rchCommandLine);
+                    if (_DirectoryNode is Directory directory)
                     {
                         CurrentDirectory = directory;
                     }
                     else
                     {
-                        features.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
                     }
                 }
             }
         }
-        public void Rm(RichTextBox rchCommandLine, string Name, bool IsRecursive, bool IsForce)
+
+        // For remove file or folder 
+        public void Rm(RichTextBox rchCommandLine, string name, bool isrecursive, bool isforce)
         {
-            var dirNode = CurrentDirectory.FindChild(Name);
-            if (dirNode != null)
+            var _DirectoryNode = CurrentDirectory.FindChild(name);
+            if (_DirectoryNode != null)
             {
-                if (!IsDeleteable(dirNode))
+                if (!IsDeleteable(_DirectoryNode))
                 {
-                    features.AddToCommandList($"Permission denied: Cannot delete '{Name}'", rchCommandLine, false);
+                    Feature.AddToCommandList($"Permission denied: Cannot delete '{name}'", rchCommandLine, false);
                     return;
                 }
-                if (dirNode is Directory directory)
+                if (_DirectoryNode is Directory directory)
                 {
                     if (directory.Parent == null)
                     {
-                        features.AddToCommandList("You can not delete root!", rchCommandLine, false);
+                        Feature.AddToCommandList("You can not delete root!", rchCommandLine, false);
                         return;
                     }
-                    // اگر دایرکتوری باشد
+
+                    // If it is directory
                     if (directory.HasChild())
                     {
-                        if (IsRecursive)
+                        if (isrecursive)
                         {
-                            if (IsForce)
+                            if (isforce)
                             {
-                                CurrentDirectory.RemoveChild(Name);
+                                CurrentDirectory.RemoveChild(name);
                             }
                             else
                             {
-                                // پرسش از کاربر برای تأیید حذف
-                                DialogResult result = MessageBox.Show($"Are you sure you want to remove directory '{Name}' and all its contents?",
+                                // Ask for delete
+                                DialogResult result = MessageBox.Show($"Are you sure you want to remove directory '{name}' and all its contents?",
                                     "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                                 if (result == DialogResult.Yes)
                                 {
-                                    CurrentDirectory.RemoveChild(Name);
+                                    CurrentDirectory.RemoveChild(name);
                                 }
                                 else
                                 {
-                                    features.AddToCommandList($"Deletion of directory '{Name}' cancelled.", rchCommandLine, false);
+                                    Feature.AddToCommandList($"Deletion of directory '{name}' cancelled.", rchCommandLine, false);
                                 }
                             }
                         }
                         else
                         {
-                            features.AddToCommandList($"Directory '{Name}' has File or Folder; Please use -r in your command", rchCommandLine, false);
+                            Feature.AddToCommandList($"Directory '{name}' has File or Folder; Please use -r in your command", rchCommandLine, false);
                         }
                     }
                     else
                     {
-                        // دایرکتوری خالی است
-                        if (IsForce)
+                        // for empty directory
+                        if (isforce)
                         {
-                            CurrentDirectory.RemoveChild(Name);
+                            CurrentDirectory.RemoveChild(name);
                         }
                         else
                         {
-                            // پرسش از کاربر برای تأیید حذف دایرکتوری خالی
-                            DialogResult result = MessageBox.Show($"Are you sure you want to remove directory '{Name}'?",
+                            // Ask for delete
+                            DialogResult _result = MessageBox.Show($"Are you sure you want to remove directory '{name}'?",
                                 "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-                            if (result == DialogResult.Yes)
+                            if (_result == DialogResult.Yes)
                             {
-                                CurrentDirectory.RemoveChild(Name);
+                                CurrentDirectory.RemoveChild(name);
                             }
                             else
                             {
-                                features.AddToCommandList($"Deletion of directory '{Name}' cancelled.", rchCommandLine, false);
+                                Feature.AddToCommandList($"Deletion of directory '{name}' cancelled.", rchCommandLine, false);
                             }
                         }
                     }
@@ -652,35 +594,35 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 else
                 {
-                    // اگر فایل باشد
-                    if (!Name.StartsWith("."))
+                    // If it is file
+                    if (!name.StartsWith("."))
                     {
-                        if (Name.Contains("."))
-                            Name = Name.Split('.')[0];
+                        if (name.Contains("."))
+                            name = name.Split('.')[0];
                     }
                     else
                     {
-                        if (Name.Contains("."))
-                            Name = "." + Name.Split('.')[1];
+                        if (name.Contains("."))
+                            name = "." + name.Split('.')[1];
                     }
 
-                    if (IsForce)
+                    if (isforce)
                     {
-                        CurrentDirectory.RemoveChild(Name);
+                        CurrentDirectory.RemoveChild(name);
                     }
                     else
                     {
-                        // پرسش از کاربر برای تأیید حذف فایل
-                        DialogResult result = MessageBox.Show($"Are you sure you want to remove file '{Name}'?",
+                        // Ask for delete
+                        DialogResult _result = MessageBox.Show($"Are you sure you want to remove file '{name}'?",
                             "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-                        if (result == DialogResult.Yes)
+                        if (_result == DialogResult.Yes)
                         {
-                            CurrentDirectory.RemoveChild(Name);
+                            CurrentDirectory.RemoveChild(name);
                         }
                         else
                         {
-                            features.AddToCommandList($"Deletion of file '{Name}' cancelled.", rchCommandLine, false);
+                            Feature.AddToCommandList($"Deletion of file '{name}' cancelled.", rchCommandLine, false);
                         }
                     }
                     return;
@@ -688,22 +630,23 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             else
             {
-                features.AddToCommandList($"'{Name}' is not found", rchCommandLine, false);
+                Feature.AddToCommandList($"'{name}' is not found", rchCommandLine, false);
             }
         }
+        //-----------------------این باید برده شود در کلاس پرمیشن ه____________________
         public bool IsDeleteable(Node node)
         {
-            switch (_UserType)
+            switch (CurrentUserType)
             {
-                case UserType.owner:
+                case UserType.Owner:
                     if (node.Permissions[1] == 'w')
                         return true;
                     break;
-                case UserType.group:
+                case UserType.Group:
                     if (node.Permissions[4] == 'w')
                         return true;
                     break;
-                case UserType.others:
+                case UserType.Others:
                     if (node.Permissions[7] == 'w')
                         return true;
                     break;
@@ -712,64 +655,67 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             return false;
         }
-        public void Ln(RichTextBox rchCommandLine, string[] Inputs)
+
+        // For making link file or directry
+        public void Ln(RichTextBox rchCommandLine, string[] inputs)
         {
-            if (Inputs[1] == "-s")
+            bool _IsSoft = inputs[1] == "-s";
+            string _Path = inputs[2];
+            string _Name = inputs[3];
+            if (_IsSoft)
             {
-                if (!Inputs[2].StartsWith("..") && !Inputs[2].StartsWith("/") && !Inputs[2].StartsWith("."))
+                if (!_Path.StartsWith("..") && !_Path.StartsWith("/") && !_Path.StartsWith("."))
                 {
-                    features.AddToCommandList($"path is not correct", rchCommandLine, false);
+                    Feature.AddToCommandList($"path is not correct", rchCommandLine, false);
                     return;
                 }
                 else
                 {
-                    var dirNode = ResolvePath(Inputs[2], rchCommandLine);
-                    if (dirNode == null) return;
-                    if (CurrentDirectory.IsExistChildName(Inputs[3]))
+                    var _DirectoryNode = ResolvePath(_Path, rchCommandLine);
+                    if (_DirectoryNode == null) return;
+                    if (CurrentDirectory.IsExistChildName(_Name))
                     {
-                        features.AddToCommandList($"this name is exist !", rchCommandLine, false);
+                        Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
                         return;
                     }
-                    CurrentDirectory.AddChild(new File(Inputs[3], "", "", true, dirNode));
+                    CurrentDirectory.AddChild(new File(_Name, "", "", true, _DirectoryNode));
 
                 }
             }
             else
             {
-                Node dirNode = null;
-                if (Inputs[1].StartsWith("..") || Inputs[1].StartsWith("/") || Inputs[1].StartsWith("."))
+                Node _DirectoryNode = null;
+                _Path = inputs[1];
+                _Name = inputs[2];
+                if (_Path.StartsWith("..") || _Path.StartsWith("/") || _Path.StartsWith("."))
                 {
-                    // پیدا کردن دایرکتوری والد
-                    dirNode = ResolvePath(Inputs[1], rchCommandLine);
+                    // Find parent
+                    _DirectoryNode = ResolvePath(_Path, rchCommandLine);
                 }
                 else
                 {
-                    // برای اسم فایل و نام پوشه کار کنه
-                    dirNode = CurrentDirectory.FindChild(Inputs[1].Split('.')[0]);
+                    // For find name
+                    _DirectoryNode = CurrentDirectory.FindChild(_Path.Split('.')[0]);
                 }
-                if (dirNode == null)
+                if (_DirectoryNode == null)
                 {
-                    features.AddToCommandList($"path is not correct", rchCommandLine, false);
+                    Feature.AddToCommandList($"path is not correct", rchCommandLine, false);
                     return;
                 }
 
-
-
-                // بررسی اینکه هدف یک فایل است (لینک سخت فقط برای فایل‌ها)
-                if (dirNode is Directory)
+                if (_DirectoryNode is Directory)
                 {
-                    features.AddToCommandList($"Hard link cannot be created for directory: {Inputs[1]}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Hard link cannot be created for directory: {_Path}", rchCommandLine, false);
                     return;
                 }
-                if (CurrentDirectory.IsExistChildName(Inputs[2]))
+                if (CurrentDirectory.IsExistChildName(_Name))
                 {
-                    features.AddToCommandList($"this name is exist !", rchCommandLine, false);
+                    Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
                     return;
                 }
-                // ایجاد لینک سخت
-                if (dirNode is File targetFile)
+                if (_DirectoryNode is File targetFile)
                 {
-                    var hardLink = new File(Inputs[2], targetFile.FileType, targetFile.Content, targetFile.IsLink, targetFile.Link)
+                    var hardLink = new File(_Name, targetFile.FileType, targetFile.Content, targetFile.IsLink, targetFile.Link)
                     {
                         Permissions = targetFile.Permissions
                     };
@@ -780,340 +726,325 @@ namespace VirtualFileSystemSimulatorWinForm
 
             }
         }
-        public void Stat(RichTextBox rchCommandLine, string[] Inputs)
+
+        // For get information about file or directory
+        public void Stat(RichTextBox rchCommandLine, string[] inputs)
         {
-            bool MoreInfo = false;
-            if (Inputs.Length > 2 && Inputs[2] == "-l") MoreInfo = true;
-            var dirNode = ResolvePath(Inputs[1], rchCommandLine);
-            if (dirNode == null)
+            bool _MoreInfo = false;
+            if (inputs.Length > 2) _MoreInfo = inputs[2] == "-l";
+            string _Path = inputs[1];
+            var _DirectoryNode = ResolvePath(_Path, rchCommandLine);
+            if (_DirectoryNode == null)
             {
-                features.AddToCommandList("Maybe name is not correct", rchCommandLine, false);
+                Feature.AddToCommandList("Maybe name is not correct", rchCommandLine, false);
                 return;
             }
-            if (dirNode is Directory directory)
+            if (_DirectoryNode is Directory _Directory)
             {
-                features.AddToCommandList($"Name : {directory.Name}", rchCommandLine, false);
-                features.AddToCommandList("Type : Directory", rchCommandLine, false);
-                features.AddToCommandList($"Size : {directory.CountChild()}", rchCommandLine, false);
-                features.AddToCommandList($"CreationTime : {directory.CreationTime}", rchCommandLine, false);
-                features.AddToCommandList($"Permissions : {directory.Permissions}", rchCommandLine, false);
+                Feature.AddToCommandList($"Name : {_Directory.Name}", rchCommandLine, false);
+                Feature.AddToCommandList("Type : Directory", rchCommandLine, false);
+                Feature.AddToCommandList($"Size : {_Directory.CountChild()}", rchCommandLine, false);
+                Feature.AddToCommandList($"CreationTime : {_Directory.CreationTime}", rchCommandLine, false);
+                Feature.AddToCommandList($"Permissions : {_Directory.Permissions}", rchCommandLine, false);
                 return;
             }
-            else if (dirNode is File File)
+            else if (_DirectoryNode is File _File)
             {
-                if (File.IsLink)
+                if (_File.IsLink)
                 {
-                    features.AddToCommandList($"Name : {File.Name}", rchCommandLine, false);
-                    features.AddToCommandList("Type : Link", rchCommandLine, false);
-                    features.AddToCommandList($"Type : {File.Size}", rchCommandLine, false);
-                    features.AddToCommandList($"CreationTime : {File.CreationTime}", rchCommandLine, false);
-                    features.AddToCommandList($"Permissions : {File.Permissions}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Name : {_File.Name}", rchCommandLine, false);
+                    Feature.AddToCommandList("Type : Link", rchCommandLine, false);
+                    Feature.AddToCommandList($"Type : {_File.Size}", rchCommandLine, false);
+                    Feature.AddToCommandList($"CreationTime : {_File.CreationTime}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Permissions : {_File.Permissions}", rchCommandLine, false);
                     return;
                 }
                 else
                 {
-                    features.AddToCommandList($"Name : {File.Name}", rchCommandLine, false);
-                    features.AddToCommandList("Type : File", rchCommandLine, false);
-                    features.AddToCommandList($"Type : {File.Size}", rchCommandLine, false);
-                    features.AddToCommandList($"CreationTime : {File.CreationTime}", rchCommandLine, false);
-                    features.AddToCommandList($"Permissions : {File.Permissions}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Name : {_File.Name}", rchCommandLine, false);
+                    Feature.AddToCommandList("Type : File", rchCommandLine, false);
+                    Feature.AddToCommandList($"Type : {_File.Size}", rchCommandLine, false);
+                    Feature.AddToCommandList($"CreationTime : {_File.CreationTime}", rchCommandLine, false);
+                    Feature.AddToCommandList($"Permissions : {_File.Permissions}", rchCommandLine, false);
                     return;
                 }
             }
         }
-        public void Pwd(Directory currentDirectory, RichTextBox rchCommandLine)
+
+        // For show current route
+        public void Pwd(Directory currentdirectory, RichTextBox rchCommandLine)
         {
-            if (currentDirectory == null)
+            if (currentdirectory == null)
                 return;
 
             try
             {
-                string fullPath = NodePathToString(currentDirectory);
-                features.AddToCommandList(fullPath, rchCommandLine, false);
+                string _FullPath = NodePathToString(currentdirectory);
+                Feature.AddToCommandList(_FullPath, rchCommandLine, false);
             }
             catch (Exception ex)
             {
-                features.AddToCommandList($"Error updating current route: {ex.Message}", rchCommandLine, false);
+                Feature.AddToCommandList($"Error updating current route: {ex.Message}", rchCommandLine, false);
             }
         }
+
+        // For save content in file
         public void Echo(string name, string content, Directory currentDirectory, RichTextBox rchCommandLine, string datetime = null)
         {
-            // ترکیب بخش‌های مسیر
-            string fullPathandfilename = NodePathToString(currentDirectory) + "/" + name;
-            CreateFile(fullPathandfilename, rchCommandLine, datetime, content);
+            // Combine path and file name
+            string _FullPathAndFileName = NodePathToString(currentDirectory) + "/" + name;
+            Touch(_FullPathAndFileName, rchCommandLine, datetime, content);
 
         }
+
+        // Function to make string of node path
         public string NodePathToString(Directory currentDirectory)
         {
             if (currentDirectory == null)
                 return null;
 
-            // ساخت مسیر از دایرکتوری جاری تا ریشه
-            var pathStack = new Stack<string>();
+            // Making path of currentDirectory to root
+            var _PathStack = new Stack<string>();
             Directory temp = currentDirectory;
 
             while (temp != null && temp.Name != "/")
             {
-                pathStack.Push(temp.Name);
+                _PathStack.Push(temp.Name);
                 temp = temp.Parent;
             }
 
-            // ترکیب بخش‌های مسیر
-            return "/" + string.Join("/", pathStack);
+            // Combine parts
+            return "/" + string.Join("/", _PathStack);
         }
 
+        // For show file's content
         public void Cat(string path, RichTextBox rchCommandLine)
         {
-            string directoryPath = NodePathToString(CurrentDirectory);
+            string _DirectoryPath = NodePathToString(CurrentDirectory);
             if (path.StartsWith(".") || path.StartsWith("/"))
-                // جدا کردن مسیر به دایرکتوری والد و نام فایل
-                // برای مثال /user/ali/report.txt
-                directoryPath = GetDirectoryPath(path);
+                _DirectoryPath = GetDirectoryPath(path);
 
-            string fileName = GetFileName(path);
+            string _FileName = GetFileName(path);
 
-            // پیدا کردن دایرکتوری والد
-            Directory parentDir;
-            if (directoryPath == ".")
+            Directory _ParentDirectory;
+            if (_DirectoryPath == ".")
             {
-                parentDir = CurrentDirectory;
+                _ParentDirectory = CurrentDirectory;
             }
             else
             {
-                var dirNode = ResolvePath(directoryPath, rchCommandLine);
+                var dirNode = ResolvePath(_DirectoryPath, rchCommandLine);
                 if (dirNode is Directory directory)
                 {
-                    parentDir = directory;
+                    _ParentDirectory = directory;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{directoryPath}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"'{_DirectoryPath}' is not a directory", rchCommandLine, false);
                     return;
                 }
             }
-            //if (!fileName.StartsWith("."))
-            //{
-            //    //برای فایل های قابل نمایش
-            //    // بررسی وجود فایل/دایرکتوری با همین نام
-            //    if (parentDir.FindChild(fileName.Split('.')[0]) != null)
-            //    {
-            //        features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
-            //        return;
-            //    }
-            //}
-            //else
-            //{
-            //    //برای فایل های غیر قابل نمایش
-            //    // بررسی وجود فایل/دایرکتوری با همین نام
-            //    if (parentDir.FindChild(fileName.Split('.')[1]) != null)
-            //    {
-            //        features.AddToCommandList($"'{fileName}' already exists", rchCommandLine, false);
-            //        return;
-            //    }
-            //}
 
-            if (parentDir.FindChild(fileName) != null)
+            if (_ParentDirectory.FindChild(_FileName) != null)
             {
-                File file = (File)parentDir.FindChild(fileName);
-                features.AddToCommandList($"{file.Content}", rchCommandLine, false);
+                File file = (File)_ParentDirectory.FindChild(_FileName);
+                Feature.AddToCommandList($"{file.Content}", rchCommandLine, false);
                 return;
             }
             else
             {
-                features.AddToCommandList($"'{fileName}' is not exist", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FileName}' is not exist", rchCommandLine, false);
                 return;
             }
         }
-        public void Mv(string[] Inputs, RichTextBox rchCommandLine)
+
+        // For moving file or directory (CUT)
+        public void Mv(string[] inputs, RichTextBox rchCommandLine)
         {
-            string mainfileName = null;
-            string mainfolderpath = null;
+            string _FirstFileName = null;
+            string _FirstDirectoryPath = null;
 
-            if (Inputs[1].StartsWith(".") || Inputs[1].StartsWith("/"))
-                mainfolderpath = Inputs[1];
+            if (inputs[1].StartsWith(".") || inputs[1].StartsWith("/"))
+                _FirstDirectoryPath = inputs[1];
             else
-                mainfileName = GetFileName(Inputs[1]);
+                _FirstFileName = GetFileName(inputs[1]);
 
-            string secondfileName = null;
-            string secondfolderpath = NodePathToString(CurrentDirectory);
+            string _SecondFileName = null;
+            string _SecondDirectoryPath = NodePathToString(CurrentDirectory);
 
-            if (Inputs[2].StartsWith(".") || Inputs[2].StartsWith("/"))
-                // جدا کردن مسیر به دایرکتوری والد و نام فایل
-                // برای مثال /user/ali/report.txt
-                secondfolderpath = Inputs[2];
+            if (inputs[2].StartsWith(".") || inputs[2].StartsWith("/"))
+                _SecondDirectoryPath = inputs[2];
             else
-                secondfileName = GetFileName(Inputs[2]);
+                _SecondFileName = GetFileName(inputs[2]);
 
-            // پیدا کردن دایرکتوری والد
-            Directory FirstDir = null;
-            if (mainfolderpath != null)
+            Directory _FirstDirectory = null;
+            if (_FirstDirectoryPath != null)
             {
-                
-                if (mainfolderpath == ".")
+
+                if (_FirstDirectoryPath == ".")
                 {
-                    FirstDir = CurrentDirectory;
+                    _FirstDirectory = CurrentDirectory;
                 }
                 else
                 {
-                    var dirNode = ResolvePath(mainfolderpath, rchCommandLine);
-                    if (dirNode is Directory directory)
+                    var _DirectoryNode = ResolvePath(_FirstDirectoryPath, rchCommandLine);
+                    if (_DirectoryNode is Directory directory)
                     {
-                        FirstDir = directory;
+                        _FirstDirectory = directory;
                     }
                     else
                     {
-                        features.AddToCommandList($"'{mainfolderpath}' is not a directory", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_FirstDirectoryPath}' is not a directory", rchCommandLine, false);
                         return;
                     }
                 }
             }
-            Directory SecondDir;
-            if (secondfolderpath == ".")
+            Directory _SecondDirectory;
+            if (_SecondDirectoryPath == ".")
             {
-                SecondDir = CurrentDirectory;
+                _SecondDirectory = CurrentDirectory;
             }
             else
             {
-                var dirNode = ResolvePath(secondfolderpath, rchCommandLine);
-                if (dirNode is Directory directory)
+                var _DirectoryNode = ResolvePath(_SecondDirectoryPath, rchCommandLine);
+                if (_DirectoryNode is Directory directory)
                 {
-                    SecondDir = directory;
+                    _SecondDirectory = directory;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{secondfolderpath}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"'{_SecondDirectoryPath}' is not a directory", rchCommandLine, false);
                     return;
                 }
             }
-            if (!CurrentDirectory.IsExistChildName(mainfileName) && mainfileName != null)
+            if (!CurrentDirectory.IsExistChildName(_FirstFileName) && _FirstFileName != null)
             {
-                features.AddToCommandList($"'{mainfileName}' is not a file", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstFileName}' is not a file", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsExistChildName(mainfileName) && mainfileName != null && secondfileName == null)
+            if (_SecondDirectory.IsExistChildName(_FirstFileName) && _FirstFileName != null && _SecondFileName == null)
             {
-                features.AddToCommandList($"'{mainfileName}' is already exist in this path", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstFileName}' is already exist in this path", rchCommandLine, false);
                 return;
             }
-            if (!CurrentDirectory.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (!CurrentDirectory.IsExistChildName(inputs[1].Trim().Split('/').ToArray().Last()) && _FirstDirectoryPath != null)
             {
-                features.AddToCommandList($"'{mainfolderpath}' is not a folder", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstDirectoryPath}' is not a folder", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (_SecondDirectory.IsExistChildName(inputs[1].Trim().Split('/').ToArray().Last()) && _FirstDirectoryPath != null)
             {
-                features.AddToCommandList($"'{mainfolderpath}' is already exist in this path", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstDirectoryPath}' is already exist in this path", rchCommandLine, false);
                 return;
             }
 
-            if (secondfileName == null && mainfolderpath == null)
+            if (_SecondFileName == null && _FirstDirectoryPath == null)
             {
-                File file = (File)CurrentDirectory.FindChild(mainfileName);
-                SecondDir.AddChild(file);
-                CurrentDirectory.RemoveChild(Inputs[1].Trim().Split('/').ToArray().Last());
+                File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                _SecondDirectory.AddChild(file);
+                CurrentDirectory.RemoveChild(inputs[1].Trim().Split('/').ToArray().Last());
             }
-            else if(mainfileName == null && secondfileName == null)
+            else if (_FirstFileName == null && _SecondFileName == null)
             {
-                SecondDir.AddChild(FirstDir);
-                CurrentDirectory.RemoveChild(Inputs[1].Trim().Split('/').ToArray().Last());
-            } 
-            else if(mainfolderpath == null)
-            {
-                File file = (File)CurrentDirectory.FindChild(mainfileName);
-                file.Name = secondfileName;
+                _SecondDirectory.AddChild(_FirstDirectory);
+                CurrentDirectory.RemoveChild(inputs[1].Trim().Split('/').ToArray().Last());
             }
-            
+            else if (_FirstDirectoryPath == null)
+            {
+                File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                file.Name = _SecondFileName;
+            }
+
         }
-        public void Cp(string[] Inputs, RichTextBox rchCommandLine)
+
+        // For copy and paste file or directory to specifided path
+        public void Cp(string[] inputs, RichTextBox rchCommandLine)
         {
-            string mainfileName = null;
-            string mainfolderpath = null;
+            string _FirstFileName = null;
+            string _FirstDirectoryPath = null;
 
-            if (Inputs[1].StartsWith(".") || Inputs[1].StartsWith("/"))
-                mainfolderpath = Inputs[1];
+            if (inputs[1].StartsWith(".") || inputs[1].StartsWith("/"))
+                _FirstDirectoryPath = inputs[1];
             else
-                mainfileName = GetFileName(Inputs[1]);
+                _FirstFileName = GetFileName(inputs[1]);
 
-            string secondfolderpath = NodePathToString(CurrentDirectory);
+            string _SecondDirectoryPath = NodePathToString(CurrentDirectory);
 
-            if (Inputs[2].StartsWith(".") || Inputs[2].StartsWith("/"))
-                // جدا کردن مسیر به دایرکتوری والد و نام فایل
-                // برای مثال /user/ali/report.txt
-                secondfolderpath = Inputs[2];
+            if (inputs[2].StartsWith(".") || inputs[2].StartsWith("/"))
+                _SecondDirectoryPath = inputs[2];
 
-            // پیدا کردن دایرکتوری والد
-            Directory FirstDir = null;
-            if (mainfolderpath != null)
+            Directory _FirstDirectory = null;
+            if (_FirstDirectoryPath != null)
             {
-                
-                if (mainfolderpath == ".")
+
+                if (_FirstDirectoryPath == ".")
                 {
-                    FirstDir = CurrentDirectory;
+                    _FirstDirectory = CurrentDirectory;
                 }
                 else
                 {
-                    var dirNode = ResolvePath(mainfolderpath, rchCommandLine);
-                    if (dirNode is Directory directory)
+                    var _DirectoryNode = ResolvePath(_FirstDirectoryPath, rchCommandLine);
+                    if (_DirectoryNode is Directory directory)
                     {
-                        FirstDir = directory;
+                        _FirstDirectory = directory;
                     }
                     else
                     {
-                        features.AddToCommandList($"'{mainfolderpath}' is not a directory", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{_FirstDirectoryPath}' is not a directory", rchCommandLine, false);
                         return;
                     }
                 }
             }
-            Directory SecondDir;
-            if (secondfolderpath == ".")
+            Directory _SecondDirectory;
+            if (_SecondDirectoryPath == ".")
             {
-                SecondDir = CurrentDirectory;
+                _SecondDirectory = CurrentDirectory;
             }
             else
             {
-                var dirNode = ResolvePath(secondfolderpath, rchCommandLine);
-                if (dirNode is Directory directory)
+                var _DirectoryNode = ResolvePath(_SecondDirectoryPath, rchCommandLine);
+                if (_DirectoryNode is Directory directory)
                 {
-                    SecondDir = directory;
+                    _SecondDirectory = directory;
                 }
                 else
                 {
-                    features.AddToCommandList($"'{secondfolderpath}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"'{_SecondDirectoryPath}' is not a directory", rchCommandLine, false);
                     return;
                 }
             }
-            if (!CurrentDirectory.IsExistChildName(mainfileName) && mainfileName != null)
+            if (!CurrentDirectory.IsExistChildName(_FirstFileName) && _FirstFileName != null)
             {
-                features.AddToCommandList($"'{mainfileName}' is not a file", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstFileName}' is not a file", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsExistChildName(mainfileName) && mainfileName != null)
+            if (_SecondDirectory.IsExistChildName(_FirstFileName) && _FirstFileName != null)
             {
-                features.AddToCommandList($"'{mainfileName}' is already exist in this path", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstFileName}' is already exist in this path", rchCommandLine, false);
                 return;
             }
-            if (!CurrentDirectory.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (!CurrentDirectory.IsExistChildName(inputs[1].Trim().Split('/').ToArray().Last()) && _FirstDirectoryPath != null)
             {
-                features.AddToCommandList($"'{mainfolderpath}' is not a folder", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstDirectoryPath}' is not a folder", rchCommandLine, false);
                 return;
             }
-            if (SecondDir.IsExistChildName(Inputs[1].Trim().Split('/').ToArray().Last()) && mainfolderpath != null)
+            if (_SecondDirectory.IsExistChildName(inputs[1].Trim().Split('/').ToArray().Last()) && _FirstDirectoryPath != null)
             {
-                features.AddToCommandList($"'{mainfolderpath}' is already exist in this path", rchCommandLine, false);
+                Feature.AddToCommandList($"'{_FirstDirectoryPath}' is already exist in this path", rchCommandLine, false);
                 return;
             }
 
-            if (mainfolderpath == null)
+            if (_FirstDirectoryPath == null)
             {
-                File file = (File)CurrentDirectory.FindChild(mainfileName);
-                SecondDir.AddChild(file);
+                File file = (File)CurrentDirectory.FindChild(_FirstFileName);
+                _SecondDirectory.AddChild(file);
             }
             else
             {
-                Directory temp = FirstDir;
-                SecondDir.AddChild(temp);
-            } 
-            
+                Directory temp = _FirstDirectory;
+                _SecondDirectory.AddChild(temp);
+            }
+
         }
     }
 
