@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace VirtualFileSystemSimulatorWinForm
 {
-    public class Users
+    public class Json
     {
         private readonly string _usersFile = "users.json";
         private Dictionary<string, User> _users = new Dictionary<string, User>();
         public User CurrentUser { get; private set; }
 
-        public Users()
+        public Json()
         {
             LoadUsers();
             if (!_users.ContainsKey("admin"))
@@ -121,20 +121,5 @@ namespace VirtualFileSystemSimulatorWinForm
         }
     }
 
-    // کلاس User (برای تکمیل)
-    public class User
-    {
-        public string Username { get; set; }
-        public string PasswordHash { get; set; }
-        public bool IsAdmin { get; set; }
 
-        public User() { } // برای deserialize
-
-        public User(string username, string passwordHash, bool isAdmin)
-        {
-            Username = username;
-            PasswordHash = passwordHash;
-            IsAdmin = isAdmin;
-        }
-    }
 }

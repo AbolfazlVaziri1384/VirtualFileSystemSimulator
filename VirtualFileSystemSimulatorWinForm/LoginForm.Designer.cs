@@ -83,6 +83,7 @@
             this.btnLogin.TabIndex = 2;
             this.btnLogin.Text = "Login";
             this.btnLogin.UseVisualStyleBackColor = true;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
             // 
             // btnRegisteration
             // 
@@ -92,6 +93,7 @@
             this.btnRegisteration.TabIndex = 3;
             this.btnRegisteration.Text = "Registeration";
             this.btnRegisteration.UseVisualStyleBackColor = true;
+            this.btnRegisteration.Click += new System.EventHandler(this.btnRegisteration_Click);
             // 
             // LoginForm
             // 
@@ -109,7 +111,7 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.Name = "LoginForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Login";
             this.Load += new System.EventHandler(this.LoginForm_Load);
             this.ResumeLayout(false);

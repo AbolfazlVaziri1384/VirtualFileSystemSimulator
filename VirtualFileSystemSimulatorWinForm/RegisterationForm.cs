@@ -16,5 +16,24 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             InitializeComponent();
         }
+
+        private void btnRegisteration_Click(object sender, EventArgs e)
+        {
+            if (txtPassword.Text.Trim() != txtReapetPassword.Text.Trim())
+            {
+                MessageBox.Show("Password and RepeatPassword is not the same", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            Json user = new Json();
+            user.Register(txtUsername.Text.Trim(), txtPassword.Text.Trim());
+            MessageBox.Show($"Registration is Successfully", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            Close();
+        }
+
+        private void RegisterationForm_Load(object sender, EventArgs e)
+        {
+            txtPassword.UseSystemPasswordChar = true;
+            txtReapetPassword.UseSystemPasswordChar = true;
+        }
     }
 }

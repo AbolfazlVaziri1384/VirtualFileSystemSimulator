@@ -29,3 +29,5 @@ D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSy
 D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSystemSimulatorWinForm\bin\Debug\System.Text.Json.xml
 D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSystemSimulatorWinForm\bin\Debug\System.Threading.Tasks.Extensions.xml
 D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSystemSimulatorWinForm\obj\Debug\VirtualF.59237335.Up2Date
+D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSystemSimulatorWinForm\obj\Debug\VirtualFileSystemSimulatorWinForm.LoginForm.resources
+D:\UNIVERSITY\PDF\Data_Structure\VirtualFileSystemSimulatorWinForm\VirtualFileSystemSimulatorWinForm\obj\Debug\VirtualFileSystemSimulatorWinForm.RegisterationForm.resources

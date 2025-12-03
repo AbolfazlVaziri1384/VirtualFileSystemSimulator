@@ -13,7 +13,7 @@ namespace VirtualFileSystemSimulatorWinForm
         public Directory CurrentDirectory { get; private set; }
         public Features Feature = new Features();
         public UserType CurrentUserType = UserType.Owner;
-        public Users UserManager { get; private set; }
+        public Json UserManager { get; set; }
         private readonly byte[] _key = Encoding.UTF8.GetBytes("your_secret_key_change_this"); // کلید رمزنگاری (تغییر دهید)
 
         public SystemFile()

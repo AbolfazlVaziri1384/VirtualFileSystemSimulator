@@ -39,16 +39,17 @@
             // 
             // btnRegisteration
             // 
-            this.btnRegisteration.Location = new System.Drawing.Point(216, 247);
+            this.btnRegisteration.Location = new System.Drawing.Point(216, 194);
             this.btnRegisteration.Name = "btnRegisteration";
             this.btnRegisteration.Size = new System.Drawing.Size(218, 81);
             this.btnRegisteration.TabIndex = 3;
             this.btnRegisteration.Text = "Registeration";
             this.btnRegisteration.UseVisualStyleBackColor = true;
+            this.btnRegisteration.Click += new System.EventHandler(this.btnRegisteration_Click);
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(216, 116);
+            this.txtPassword.Location = new System.Drawing.Point(216, 86);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
@@ -59,7 +60,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.label2.Location = new System.Drawing.Point(99, 119);
+            this.label2.Location = new System.Drawing.Point(99, 89);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(109, 25);
@@ -70,7 +71,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.label1.Location = new System.Drawing.Point(95, 53);
+            this.label1.Location = new System.Drawing.Point(95, 38);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(113, 25);
@@ -79,7 +80,7 @@
             // 
             // txtUsername
             // 
-            this.txtUsername.Location = new System.Drawing.Point(216, 50);
+            this.txtUsername.Location = new System.Drawing.Point(216, 35);
             this.txtUsername.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(218, 30);
@@ -87,7 +88,7 @@
             // 
             // txtReapetPassword
             // 
-            this.txtReapetPassword.Location = new System.Drawing.Point(216, 184);
+            this.txtReapetPassword.Location = new System.Drawing.Point(216, 134);
             this.txtReapetPassword.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtReapetPassword.Name = "txtReapetPassword";
             this.txtReapetPassword.PasswordChar = '*';
@@ -98,7 +99,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.label3.Location = new System.Drawing.Point(32, 187);
+            this.label3.Location = new System.Drawing.Point(32, 137);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(176, 25);
@@ -110,7 +111,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DarkSlateBlue;
-            this.ClientSize = new System.Drawing.Size(478, 370);
+            this.ClientSize = new System.Drawing.Size(478, 311);
             this.Controls.Add(this.txtReapetPassword);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.btnRegisteration);
@@ -124,6 +125,7 @@
             this.Name = "RegisterationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Registeration";
+            this.Load += new System.EventHandler(this.RegisterationForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
