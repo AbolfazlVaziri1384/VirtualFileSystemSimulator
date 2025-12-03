@@ -106,7 +106,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (index == parts.Length - 1)
                 {
-                    var _NewDirectory = new Directory(_CurrentPart, current);
+                    var _NewDirectory = new Directory(_CurrentPart, current,owner:UserManager.CurrentUser.Username);
                     current.AddChild(_NewDirectory);
                     CurrentDirectory = _NewDirectory;
                 }
@@ -114,7 +114,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     if (createparents)
                     {
-                        var _NewDirectory = new Directory(_CurrentPart, current);
+                        var _NewDirectory = new Directory(_CurrentPart, current, owner: UserManager.CurrentUser.Username);
                         current.AddChild(_NewDirectory);
                         CreateDirectory(_NewDirectory, parts, index + 1, createparents, rchCommandLine);
                     }
@@ -190,12 +190,12 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (!_FileName.StartsWith("."))
                 {
                     // For files we can show there
-                    _NewFile = new File(_FileName.Split('.')[0], fileType: _FileExtension);
+                    _NewFile = new File(_FileName.Split('.')[0], fileType: _FileExtension, owner: UserManager.CurrentUser.Username);
                 }
                 else
                 {
                     // For files we can not show there
-                    _NewFile = new File("." + _FileName.Split('.')[1], fileType: _FileExtension);
+                    _NewFile = new File("." + _FileName.Split('.')[1], fileType: _FileExtension, owner: UserManager.CurrentUser.Username);
                 }
                 // Add custom time if it exist
                 if (!string.IsNullOrEmpty(customtime))
@@ -679,7 +679,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         Feature.AddToCommandList($"this name is exist !", rchCommandLine, false);
                         return;
                     }
-                    CurrentDirectory.AddChild(new File(_Name, isLink: true, link: _Path));
+                    CurrentDirectory.AddChild(new File(_Name, isLink: true, link: _Path, owner: UserManager.CurrentUser.Username));
 
                 }
             }
@@ -728,7 +728,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 if (_DirectoryNode is File targetFile)
                 {
-                    var hardLink = new File(_Name, fileType: targetFile.FileType, content: targetFile.Content, isLink: targetFile.IsLink, link: targetFile.Link)
+                    var hardLink = new File(_Name, fileType: targetFile.FileType, content: targetFile.Content, isLink: targetFile.IsLink, link: targetFile.Link, owner: UserManager.CurrentUser.Username)
                     {
                         Permissions = targetFile.Permissions
                     };

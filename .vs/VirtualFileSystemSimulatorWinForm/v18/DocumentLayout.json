@@ -11,7 +11,7 @@
       "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|d:\\university\\pdf\\data_structure\\virtualfilesystemsimulatorwinform\\virtualfilesystemsimulatorwinform\\registerationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\virtualfilesystemsimulatorwinform\\registerationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\registerationform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -23,7 +23,7 @@
       "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\json.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|d:\\university\\pdf\\data_structure\\virtualfilesystemsimulatorwinform\\virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -70,8 +70,7 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\RegisterationForm.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAADwvxsAAABjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T15:18:22.178Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-03T15:18:22.178Z"
             },
             {
               "$type": "Document",
@@ -81,7 +80,7 @@
               "RelativeDocumentMoniker": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
               "ToolTip": "D:\\UNIVERSITY\\PDF\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "ViewState": "AgIAAIoCAAAAAAAAAAAIwOQCAAATAAAAAAAAAA==",
+              "ViewState": "AgIAAMACAAAAAAAAAIAwwNoCAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-03T14:46:14.141Z",
               "EditorCaption": ""
@@ -96,8 +95,7 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\User.cs",
               "ViewState": "AgIAACsAAAAAAAAAAAAAwDYAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T10:06:40.168Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-03T10:06:40.168Z"
             },
             {
               "$type": "Document",
@@ -109,8 +107,7 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Json.cs",
               "ViewState": "AgIAAAcAAAAAAAAAAAAowBUAAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T04:54:53.797Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-03T04:54:53.797Z"
             },
             {
               "$type": "Document",
@@ -122,8 +119,7 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Form1.cs",
               "ViewState": "AgIAABcBAAAAAAAAAAAAACYBAABeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-29T04:33:46.094Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-29T04:33:46.094Z"
             },
             {
               "$type": "Document",
@@ -159,8 +155,7 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Node.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAlwAwAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-01T16:08:47.667Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-01T16:08:47.667Z"
             },
             {
               "$type": "Document",
