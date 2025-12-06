@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VirtualFileSystemSimulatorWinForm
@@ -19,7 +20,7 @@ namespace VirtualFileSystemSimulatorWinForm
             LoadUsers();
             if (!_users.ContainsKey("admin"))
             {
-                Register("admin", "admin", User.UserTypeEnum.Admin);
+                Register("admin", "admin");
             }
         }
 
@@ -49,9 +50,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 return true; // کاربر وجود دارد
             }
             else
-                { return false; }
+            { return false; }
         }
-        public bool Register(string username, string password , User.UserTypeEnum userType)
+        public bool Register(string username, string password)
         {
             if (_users.ContainsKey(username))
             {
@@ -60,7 +61,7 @@ namespace VirtualFileSystemSimulatorWinForm
             using (SHA256 sha256 = SHA256.Create())
             {
                 var passwordHash = BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(password))).Replace("-", "");
-                var newUser = new User(username, passwordHash , (int)userType);
+                var newUser = new User(username, passwordHash);
                 _users[username] = newUser;
                 SaveUsers();
                 return true;
@@ -82,36 +83,86 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             return false;
         }
-        public bool ChangeUserType(string username , User.UserTypeEnum newusertype)
+        public bool ChangeUserType(string username, User.UserTypeEnum newusertype)
+        {
+            bool _IsDone = false;
+            if (_users.ContainsKey(username))
+            {
+                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count(), 2];
+                for (int i = 0; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                {
+                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[1];
+                }
+
+                for (int i = 0; i < _UsersAdnGroups.GetLength(0); i++)
+                {
+                    if (_UsersAdnGroups[i, 0] == CurrentUser.Username)
+                    {
+                        int temp = (int)newusertype;
+                        _UsersAdnGroups[i, 1] = temp.ToString();
+                        _IsDone = true;
+                    }
+                }
+                List<string> _Upadte = new List<string>();
+                for (int i = 0; i < _UsersAdnGroups.GetLength(0); i++)
+                {
+                    _Upadte.Add(_UsersAdnGroups[i, 0] + ',' + _UsersAdnGroups[i, 1]);
+                }
+
+                _users[username].Groups = string.Join("/", _Upadte);
+                SaveUsers();
+            }
+            return _IsDone;
+        }
+        public void AddToCurrentGroup(string username, User.UserTypeEnum newusertype)
         {
             if (_users.ContainsKey(username))
             {
-                _users[username].UserType = (int)newusertype;
+                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count() + 1, 2];
+                int i = 0;
+                for (; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                {
+                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                }
+                _UsersAdnGroups[i, 0] = CurrentUser.Username;
+                int temp = (int)newusertype;
+                _UsersAdnGroups[i, 1] = temp.ToString();
+
+                List<string> _Upadte = new List<string>();
+                for (int j = 0; j < _UsersAdnGroups.GetLength(0); j++)
+                {
+                    _Upadte.Add(_UsersAdnGroups[j, 0] + ',' + _UsersAdnGroups[j, 1]);
+                }
+                _users[username].Groups = string.Join("/", _Upadte);
                 SaveUsers();
-                return true;
-            }
-            return false;
-        }
-        public void AddToCurrentGroup(string username)
-        {
-            if (_users.ContainsKey(username))
-            {
-                var _groups = _users[username].Groups.Split(',').ToList();
-                _groups.Add(CurrentUser.Username.ToLower());
-                _users[username].Groups = string.Join(",", _groups);
-                SaveUsers();
             }
         }
-        public void RemoveGroup(string username,string groupname)
+        public bool RemoveGroup(string username, string groupname)
         {
+            bool _IsDone = false;
             if (_users.ContainsKey(username))
             {
                 groupname = groupname.ToLower();
-                var _groups = _users[username].Groups.Split(',').ToList();
-                _groups.Remove(groupname);
-                _users[username].Groups = string.Join(",", _groups);
+
+                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count(), 2];
+                for (int i = 0; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                {
+                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                }
+
+                List<string> _Upadte = new List<string>();
+                for (int j = 0; j < _UsersAdnGroups.GetLength(0); j++)
+                {
+                    if (_UsersAdnGroups[j, 1] == groupname) { _IsDone = true; continue; }
+                    _Upadte.Add(_UsersAdnGroups[j, 0] + ',' + _UsersAdnGroups[j, 1]);
+                }
+                _users[username].Groups = string.Join("/", _Upadte);
                 SaveUsers();
             }
+            return _IsDone;
         }
 
         // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
@@ -134,7 +185,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
 
         // ذخیره VFS برای کاربر جاری
-        public void SaveVfsForCurrentUser(Node root , string systemname)
+        public void SaveVfsForCurrentUser(Node root, string systemname)
         {
             if (CurrentUser == null) return;
 

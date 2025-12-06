@@ -262,9 +262,25 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void AddGroupCommand(string[] inputs, RichTextBox commandList)
         {
-            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
             {
-                Fs.AddGroupsForUser(inputs[1], commandList);
+                switch (inputs[2])
+                {
+                    case "owner":
+                        Fs.AddGroupsForUser(inputs[1], User.UserTypeEnum.Owner, rchCommandList);
+                        break;
+                    case "group":
+                        Fs.AddGroupsForUser(inputs[1], User.UserTypeEnum.Group, rchCommandList);
+                        break;
+                    case "other":
+                        Fs.AddGroupsForUser(inputs[1], User.UserTypeEnum.Others, rchCommandList);
+                        break;
+                    case "admin":
+                        Fs.AddGroupsForUser(inputs[1], User.UserTypeEnum.Admin, rchCommandList);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         public void RemoveGroupCommand(string[] inputs, RichTextBox commandList)
@@ -273,7 +289,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 string _Username = inputs[2];
                 string _Groupname = inputs[1];
-                Fs.removeGroupsForUser(_Groupname, _Username, commandList);
+                Fs.RemoveGroupsForUser(_Groupname, _Username, commandList);
             }
         }
         public void LsCommand(string[] inputs, RichTextBox commandList)
@@ -345,6 +361,9 @@ namespace VirtualFileSystemSimulatorWinForm
                         break;
                     case "other":
                         Fs.ChangeUserType(inputs[1], User.UserTypeEnum.Others, rchCommandList);
+                        break;
+                    case "admin":
+                        Fs.ChangeUserType(inputs[1], User.UserTypeEnum.Admin, rchCommandList);
                         break;
                     default:
                         break;

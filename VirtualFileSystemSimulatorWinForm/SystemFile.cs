@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace VirtualFileSystemSimulatorWinForm
 {
@@ -26,7 +27,7 @@ namespace VirtualFileSystemSimulatorWinForm
         // ذخیره بعد از عملیات
         public void Save()
         {
-            UserManager.SaveVfsForCurrentUser(Root , SystemName);
+            UserManager.SaveVfsForCurrentUser(Root, SystemName);
         }
 
         //برای گروه بندی ها 
@@ -39,46 +40,89 @@ namespace VirtualFileSystemSimulatorWinForm
                 Feature.AddToCommandList("This SystemFile is not exist", rchCommandLine, false);
                 return;
             }
-            if (!UserManager.CurrentUser.Groups.Split(',').Contains(systemname.ToLower()) && systemname != UserManager.CurrentUser.Username)
+            string[,] _UsersAdnGroups = new string[UserManager.CurrentUser.Groups.Split('/').ToList().Count(), 2];
+            for (int i = 0; i < UserManager.CurrentUser.Groups.Split('/').ToList().Count(); i++)
             {
-                Feature.AddToCommandList("You can not open this SystemFile", rchCommandLine, false);
+                _UsersAdnGroups[i, 0] = UserManager.CurrentUser.Groups.Split('/')[i].Split(',')[0];
+                _UsersAdnGroups[i, 1] = UserManager.CurrentUser.Groups.Split('/')[i].Split(',')[1];
+            }
+            systemname = systemname.ToLower();
+            if (systemname == UserManager.CurrentUser.Username)
+            {
+                SystemName = systemname;
+                UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Admin;
+                Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+                CurrentDirectory = Root;
                 return;
             }
-            SystemName = systemname;
-            Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
-            CurrentDirectory = Root;
+            for (int i = 0; i < UserManager.CurrentUser.Groups.Split('/').ToList().Count(); i++)
+            {
+                if (_UsersAdnGroups[i, 0] == systemname)
+                {
+                    SystemName = systemname;
+                    switch (_UsersAdnGroups[i, 1])
+                    {
+                        case "owner":
+                            UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Owner;
+                            break;
+                        case "group":
+                            UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Group;
+                            break;
+                        case "other":
+                            UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Others;
+                            break;
+                        case "admin":
+                            UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Admin;
+                            break;
+                        default:
+                            break;
+                    }
+                    Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+                    CurrentDirectory = Root;
+                    return;
+                }
+            }
+            Feature.AddToCommandList("You can not open this SystemFile", rchCommandLine, false);
+            return;
         }
-        public void AddGroupsForUser(string username, RichTextBox rchCommandLine)
+        public void AddGroupsForUser(string username, User.UserTypeEnum newusertype, RichTextBox rchCommandLine)
         {
             if (!UserManager.UserIsExist(username))
             {
                 Feature.AddToCommandList("This User is not exist", rchCommandLine, false);
                 return;
             }
-            UserManager.AddToCurrentGroup(username);
+            UserManager.AddToCurrentGroup(username, newusertype);
         }
-        public void removeGroupsForUser(string groupname,string username, RichTextBox rchCommandLine)
+        public void RemoveGroupsForUser(string groupname, string username, RichTextBox rchCommandLine)
         {
-            if (!UserManager.UserIsExist(username))
-            {
-                Feature.AddToCommandList("This User is not exist", rchCommandLine, false);
-                return;
-            }
-            if (UserManager.CurrentUser.Username != groupname && !UserManager.CurrentUser.IsAdmin())
+            if (UserManager.CurrentUser.Username != groupname)
             {
                 Feature.AddToCommandList("You can not remove this user of group", rchCommandLine, false);
                 return;
             }
-            UserManager.RemoveGroup(username,groupname);
+            if (!UserManager.UserIsExist(username))
+            {
+                Feature.AddToCommandList("This User is not exist", rchCommandLine, false);
+                return;
+            }
+
+            if (UserManager.RemoveGroup(username, groupname))
+            {
+                Feature.AddToCommandList("Susecc", rchCommandLine, false);
+                return;
+            }
+            Feature.AddToCommandList("This User do not have this permission", rchCommandLine, false);
+            return;
         }
 
-        
+
         // For Show User Type 
         public User.UserTypeEnum ShowUserType()
         {
             return (User.UserTypeEnum)UserManager.CurrentUser.UserType;
         }
-        public void ChangeUserType(string username , User.UserTypeEnum usertype, RichTextBox rchCommandLine)
+        public void ChangeUserType(string username, User.UserTypeEnum usertype, RichTextBox rchCommandLine)
         {
             if (!UserManager.CurrentUser.IsAdmin())
             {
@@ -135,7 +179,7 @@ namespace VirtualFileSystemSimulatorWinForm
         // For Create Directory
         private void CreateDirectory(Directory current, string[] parts, int index, bool createparents, RichTextBox rchCommandLine)
         {
-            if (!UserManager.CurrentUser.HasPermission(current , "w"))
+            if (!UserManager.CurrentUser.HasPermission(current, "w"))
             {
                 Feature.AddToCommandList("You do not have Permission to make directory in this path", rchCommandLine, false);
                 return;
@@ -166,7 +210,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (index == parts.Length - 1)
                 {
-                    var _NewDirectory = new Directory(_CurrentPart, current,owner:UserManager.CurrentUser.Username);
+                    var _NewDirectory = new Directory(_CurrentPart, current, owner: UserManager.CurrentUser.Username);
                     current.AddChild(_NewDirectory);
                     CurrentDirectory = _NewDirectory;
                 }
@@ -599,7 +643,7 @@ namespace VirtualFileSystemSimulatorWinForm
             var _DirectoryNode = CurrentDirectory.FindChild(name);
             if (_DirectoryNode != null)
             {
-                if (!UserManager.CurrentUser.HasPermission(_DirectoryNode,"w"))
+                if (!UserManager.CurrentUser.HasPermission(_DirectoryNode, "w"))
                 {
                     Feature.AddToCommandList($"Permission denied: Cannot delete '{name}'", rchCommandLine, false);
                     return;

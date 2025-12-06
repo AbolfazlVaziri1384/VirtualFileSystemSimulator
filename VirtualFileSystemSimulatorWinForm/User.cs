@@ -15,11 +15,12 @@ namespace VirtualFileSystemSimulatorWinForm
 
         public enum UserTypeEnum { Owner = 0, Group = 1, Others = 2, Admin = 3 }
 
-        public User(string username, string passwordHash, int usertype)
+        public User(string username, string passwordHash)
         {
             Username = username;
             PasswordHash = passwordHash;
-            UserType = usertype;
+            //همه چون در هنگام ورود وارد صفحه خودشان می شوند پس ادمین ان بخش هستن و نیازی به چک اضافه نیست
+            UserType = 3;
             Groups = string.Empty;
         }
         // چک مجوزها (مثال ساده)
