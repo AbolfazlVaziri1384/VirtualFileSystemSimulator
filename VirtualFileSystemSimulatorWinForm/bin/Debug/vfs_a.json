@@ -1,24 +1,24 @@
 {
   "name": "/",
-  "timestamp": "2025-12-03 18:51",
+  "timestamp": "2025-12-06 05:42",
   "permissions": "rwxr-xr-x",
   "owner": "a",
   "group": "admin",
   "is_dir": true,
   "children": [
     {
-      "name": "ali",
-      "timestamp": "2025-12-03 18:51",
+      "name": "alli",
+      "timestamp": "2025-12-06 05:43",
       "permissions": "rwxr-xr-x",
-      "owner": "admin",
+      "owner": "a",
       "group": "admin",
       "is_dir": true,
       "children": [
         {
-          "name": "aqa",
-          "timestamp": "2025-12-03 19:03",
+          "name": "ai",
+          "timestamp": "2025-12-06 05:43",
           "permissions": "rw-r--r--",
-          "owner": "admin",
+          "owner": "a",
           "group": "admin",
           "is_dir": false,
           "content": "",

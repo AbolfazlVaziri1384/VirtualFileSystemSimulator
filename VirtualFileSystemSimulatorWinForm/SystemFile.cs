@@ -13,20 +13,66 @@ namespace VirtualFileSystemSimulatorWinForm
         public Directory CurrentDirectory { get; private set; }
         public Features Feature = new Features();
         public Json UserManager { get; set; }
+        public string SystemName { get; set; }
 
         public SystemFile(Json userManager)
         {
             UserManager = userManager;
-            Root = (Directory)UserManager.LoadVfsForCurrentUser();
+            SystemName = UserManager.CurrentUser.Username;
+            Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
             CurrentDirectory = Root;
         }
 
         // ذخیره بعد از عملیات
         public void Save()
         {
-            UserManager.SaveVfsForCurrentUser(Root);
+            UserManager.SaveVfsForCurrentUser(Root , SystemName);
         }
 
+        //برای گروه بندی ها 
+        //همه اول زیر مجموعه ادمین هستن
+        //گروه اسم owner افراد هستش
+        public void LoadAnotherSystemFile(string systemname, RichTextBox rchCommandLine)
+        {
+            if (!UserManager.UserIsExist(systemname))
+            {
+                Feature.AddToCommandList("This SystemFile is not exist", rchCommandLine, false);
+                return;
+            }
+            if (!UserManager.CurrentUser.Groups.Split(',').Contains(systemname.ToLower()) && systemname != UserManager.CurrentUser.Username)
+            {
+                Feature.AddToCommandList("You can not open this SystemFile", rchCommandLine, false);
+                return;
+            }
+            SystemName = systemname;
+            Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+            CurrentDirectory = Root;
+        }
+        public void AddGroupsForUser(string username, RichTextBox rchCommandLine)
+        {
+            if (!UserManager.UserIsExist(username))
+            {
+                Feature.AddToCommandList("This User is not exist", rchCommandLine, false);
+                return;
+            }
+            UserManager.AddToCurrentGroup(username);
+        }
+        public void removeGroupsForUser(string groupname,string username, RichTextBox rchCommandLine)
+        {
+            if (!UserManager.UserIsExist(username))
+            {
+                Feature.AddToCommandList("This User is not exist", rchCommandLine, false);
+                return;
+            }
+            if (UserManager.CurrentUser.Username != groupname && !UserManager.CurrentUser.IsAdmin())
+            {
+                Feature.AddToCommandList("You can not remove this user of group", rchCommandLine, false);
+                return;
+            }
+            UserManager.RemoveGroup(username,groupname);
+        }
+
+        
         // For Show User Type 
         public User.UserTypeEnum ShowUserType()
         {
@@ -39,7 +85,7 @@ namespace VirtualFileSystemSimulatorWinForm
                 Feature.AddToCommandList("You do not have Permission to Change UserType", rchCommandLine, false);
                 return;
             }
-            if (UserManager.changeUserType(username, usertype))
+            if (UserManager.ChangeUserType(username, usertype))
             {
                 Feature.AddToCommandList("Success", rchCommandLine, false);
                 return;

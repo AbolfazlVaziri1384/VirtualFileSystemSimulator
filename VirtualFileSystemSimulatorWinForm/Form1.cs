@@ -164,6 +164,15 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "cp":
                     CpCommand(_InputArray, rchCommandList);
                     break;
+                case "load":
+                    LoadCommand(_InputArray, rchCommandList);
+                    break;
+                case "addgroup":
+                    AddGroupCommand(_InputArray, rchCommandList);
+                    break;
+                case "rmgroup":
+                    RemoveGroupCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -243,6 +252,30 @@ namespace VirtualFileSystemSimulatorWinForm
                 Fs.Cp(inputs, commandList);
             }
         }
+        // For Load Another FileSystem
+        public void LoadCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            {
+                Fs.LoadAnotherSystemFile(inputs[1], commandList);
+            }
+        }
+        public void AddGroupCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            {
+                Fs.AddGroupsForUser(inputs[1], commandList);
+            }
+        }
+        public void RemoveGroupCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
+            {
+                string _Username = inputs[2];
+                string _Groupname = inputs[1];
+                Fs.removeGroupsForUser(_Groupname, _Username, commandList);
+            }
+        }
         public void LsCommand(string[] inputs, RichTextBox commandList)
         {
             if (Feature.CheckLength(inputs, 1, 4, rchCommandList))
@@ -305,13 +338,13 @@ namespace VirtualFileSystemSimulatorWinForm
                 switch (inputs[2])
                 {
                     case "owner":
-                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Owner,rchCommandList);
+                        Fs.ChangeUserType(inputs[1], User.UserTypeEnum.Owner, rchCommandList);
                         break;
                     case "group":
-                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Group,rchCommandList);
+                        Fs.ChangeUserType(inputs[1], User.UserTypeEnum.Group, rchCommandList);
                         break;
                     case "other":
-                        Fs.ChangeUserType(inputs[1],User.UserTypeEnum.Others,rchCommandList);
+                        Fs.ChangeUserType(inputs[1], User.UserTypeEnum.Others, rchCommandList);
                         break;
                     default:
                         break;

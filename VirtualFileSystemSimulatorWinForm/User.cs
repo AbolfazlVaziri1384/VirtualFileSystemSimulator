@@ -11,6 +11,7 @@ namespace VirtualFileSystemSimulatorWinForm
         public string Username { get; set; }
         public string PasswordHash { get; set; }
         public int UserType { get; set; }
+        public string Groups { get; set; }
 
         public enum UserTypeEnum { Owner = 0, Group = 1, Others = 2, Admin = 3 }
 
@@ -19,6 +20,7 @@ namespace VirtualFileSystemSimulatorWinForm
             Username = username;
             PasswordHash = passwordHash;
             UserType = usertype;
+            Groups = string.Empty;
         }
         // چک مجوزها (مثال ساده)
         public bool HasPermission(Node node, string action) // action: "r", "w", "x"
