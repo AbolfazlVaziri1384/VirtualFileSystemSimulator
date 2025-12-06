@@ -173,6 +173,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "rmgroup":
                     RemoveGroupCommand(_InputArray, rchCommandList);
                     break;
+                case "systemfile":
+                    SystemFileCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -290,6 +293,13 @@ namespace VirtualFileSystemSimulatorWinForm
                 string _Username = inputs[2];
                 string _Groupname = inputs[1];
                 Fs.RemoveGroupsForUser(_Groupname, _Username, commandList);
+            }
+        }
+        public void SystemFileCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
+            {
+                Feature.AddToCommandList($"System File : {Fs.SystemName}", rchCommandList, false);
             }
         }
         public void LsCommand(string[] inputs, RichTextBox commandList)
