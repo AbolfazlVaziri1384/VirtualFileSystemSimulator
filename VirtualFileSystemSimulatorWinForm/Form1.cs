@@ -176,6 +176,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "systemfile":
                     SystemFileCommand(_InputArray, rchCommandList);
                     break;
+                case "find":
+                    FindCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -300,6 +303,14 @@ namespace VirtualFileSystemSimulatorWinForm
             if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
             {
                 Feature.AddToCommandList($"System File : {Fs.SystemName}", rchCommandList, false);
+            }
+        }
+        public void FindCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 4, 4, rchCommandList))
+            {
+                string _Pattern = inputs[3].Trim().Trim('"');
+                Fs.Find(inputs[1], inputs[2], _Pattern, commandList);
             }
         }
         public void LsCommand(string[] inputs, RichTextBox commandList)

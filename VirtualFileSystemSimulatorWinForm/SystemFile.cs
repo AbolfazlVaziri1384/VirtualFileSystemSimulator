@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
@@ -115,6 +117,7 @@ namespace VirtualFileSystemSimulatorWinForm
             Feature.AddToCommandList("This User do not have this permission", rchCommandLine, false);
             return;
         }
+
 
 
         // For Show User Type 
@@ -1208,6 +1211,122 @@ namespace VirtualFileSystemSimulatorWinForm
                 _SecondDirectory.AddChild(temp);
             }
             Save();
+        }
+        public void Find(string path, string option, string pattern, RichTextBox rchCommandLine)
+        {
+            Directory _SearchDirectory;
+
+            if (path == ".")
+            {
+                _SearchDirectory = CurrentDirectory;
+            }
+            else if (path == "~")
+            {
+                _SearchDirectory = Root;
+            }
+            else
+            {
+                var dirNode = ResolvePath(path, rchCommandLine);
+                if (dirNode is Directory directory)
+                {
+                    _SearchDirectory = directory;
+                }
+                else
+                {
+                    Feature.AddToCommandList($"'{path}' is not a directory", rchCommandLine, false);
+                    return;
+                }
+            }
+
+            // جدا کردن option (مثلاً -name)
+            if (option != "-name" && option != "-type")
+            {
+                Feature.AddToCommandList($"Unsupported option: {option}", rchCommandLine, false);
+                return;
+            }
+
+            // اگر option مربوط به نام فایل است
+            if (option == "-name")
+            {
+                SearchByName(_SearchDirectory, pattern, rchCommandLine);
+            }
+            else if (option == "-type")
+            {
+                // برای جستجوی بر اساس نوع (f برای فایل، d برای دایرکتوری)
+                //// جستجوی تمام دایرکتوری‌ها
+                //Find(".", "-type", "d", richTextBox1);
+
+                SearchByType(_SearchDirectory, pattern, rchCommandLine);
+            }
+        }
+
+        // متد بازگشتی برای جستجو بر اساس نام
+        private void SearchByName(Directory currentDir, string pattern, RichTextBox rchCommandLine)
+        {
+            foreach (var item in currentDir.Children)
+            {
+
+
+                // بررسی تطابق با الگوی wildcard
+                if (item is File file)
+                {
+                    string fullName = file.Name + "." + file.FileType;
+
+                    if (IsPatternMatch(fullName, pattern))
+                    {
+                        Feature.AddToCommandList(
+                            NodePathToString((Directory)item.Parent) + '/' + fullName,
+                            rchCommandLine,
+                            false
+                        );
+                    }
+                }
+
+
+                else if (item is Directory directory)
+                {
+                    // جستجوی بازگشتی در زیردایرکتوری‌ها
+                    SearchByName(directory, pattern, rchCommandLine);
+                }
+            }
+        }
+
+        // متد برای جستجو بر اساس نوع
+        private void SearchByType(Directory currentDir, string type, RichTextBox rchCommandLine)
+        {
+            foreach (var item in currentDir.Children)
+            {
+                if (type == "f" && item is File file)
+                {
+                    Feature.AddToCommandList(NodePathToString((Directory)item.Parent) + '/' + file.Name + '.' + file.FileType, rchCommandLine, false);
+                }
+                else if (type == "d" && item is Directory)
+                {
+                    Feature.AddToCommandList(NodePathToString((Directory)item), rchCommandLine, false);
+                }
+
+                // اگر آیتم دایرکتوری است، به صورت بازگشتی ادامه بده
+                if (item is Directory directory)
+                {
+                    SearchByType(directory, type, rchCommandLine);
+                }
+            }
+        }
+
+        // متد برای تطبیق الگوی wildcard (ساده)
+        private bool IsPatternMatch(string fileName, string pattern)
+        {
+            // 1. ابتدا wildcard‌ها را به معادل regex تبدیل کنیم
+            string regexPattern = pattern
+                .Replace(".", "\\.")  // ابتدا نقطه را escape کنیم
+                .Replace("*", ".*")   // سپس * را به .* تبدیل کنیم
+                .Replace("?", ".");   // سپس ? را به . تبدیل کنیم
+
+            // 2. حالا بقیه کاراکترهای خاص regex را escape کنیم
+            // اما قبلاً نقطه را escape کرده‌ایم، پس باید مراقب باشیم
+            regexPattern = "^" + regexPattern + "$";
+
+            return Regex.IsMatch(fileName, regexPattern, RegexOptions.IgnoreCase);
         }
     }
 
