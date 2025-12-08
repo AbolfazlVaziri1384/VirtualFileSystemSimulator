@@ -1212,6 +1212,288 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             Save();
         }
+        public void Chmod(string permission, string file_directory, RichTextBox rchCommandLine)
+        {
+            Node _FileOrDirectory = CurrentDirectory.FindChild(file_directory);
+            char[] _PermissionChars = _FileOrDirectory.Permissions.ToCharArray();
+
+            if (_FileOrDirectory == null)
+            {
+                Feature.AddToCommandList($"Error: '{file_directory}' not found", rchCommandLine, false);
+                return;
+            }
+
+            if (int.TryParse(permission, out int _PermissionCode))
+            {
+                if (_PermissionCode < 0 || _PermissionCode > 777)
+                {
+                    Feature.AddToCommandList($"Error: Permission code '{_PermissionCode}' is invalid. Must be between 000 and 777", rchCommandLine, false);
+                    return;
+                }
+
+                // اعمال مجوزها به صورت دستی رقم به رقم
+                int tempCode = _PermissionCode;
+                int position = 0; // 0: others, 1: group, 2: owner
+
+                while (tempCode > 0)
+                {
+                    int digit = tempCode % 10;
+
+                    // بررسی اینکه رقم معتبر باشد (0-7)
+                    if (digit < 0 || digit > 7)
+                    {
+                        Feature.AddToCommandList($"Error: Invalid permission digit '{digit}'", rchCommandLine, false);
+                        return;
+                    }
+
+                    // تبدیل رقم به مجوزهای خواندن/نوشتن/اجرا
+                    // Owner (موقعیت 2), Group (موقعیت 1), Others (موقعیت 0)
+                    switch (position)
+                    {
+                        case 2: // Owner
+                            if ((digit & 4) != 0)
+                            {
+                                _PermissionChars[0] = 'r';
+                            }
+                            if ((digit & 2) != 0)
+                            {
+                                _PermissionChars[1] = 'w';
+                            }
+                            if ((digit & 1) != 0)
+                            {
+                                _PermissionChars[2] = 'x';
+                            }
+                            break;
+                        case 1: // Group
+                            if ((digit & 4) != 0)
+                            {
+                                _PermissionChars[3] = 'r';
+                            }
+                            if ((digit & 2) != 0)
+                            {
+                                _PermissionChars[4] = 'w';
+                            }
+                            if ((digit & 1) != 0)
+                            {
+                                _PermissionChars[5] = 'x';
+                            }
+                            break;
+                        case 0: // Others
+                            if ((digit & 4) != 0)
+                            {
+                                _PermissionChars[6] = 'r';
+                            }
+                            if ((digit & 2) != 0)
+                            {
+                                _PermissionChars[7] = 'w';
+                            }
+                            if ((digit & 1) != 0)
+                            {
+                                _PermissionChars[8] = 'x';
+                            }
+                            break;
+                    }
+
+                    tempCode /= 10;
+                    position++;
+
+                    // جلوگیری از بیش از 3 رقم
+                    if (position > 3)
+                    {
+                        Feature.AddToCommandList("Warning: Permission code has more than 3 digits. Using first 3 digits", rchCommandLine, false);
+                        return;
+                    }
+                }
+                _FileOrDirectory.Permissions = string.Join("", _PermissionChars);
+                Feature.AddToCommandList($"Permissions for '{file_directory}' changed to {_PermissionCode:D3}", rchCommandLine, false);
+            }
+            // اگر permission به فرمت نمادین (مثل u+rwx,g+rx,o+r) بود
+            else if (IsSymbolicPermission(permission))
+            {
+                ApplySymbolicPermission(_FileOrDirectory, permission, rchCommandLine, ref _PermissionChars);
+                _FileOrDirectory.Permissions = string.Join("", _PermissionChars);
+                Feature.AddToCommandList($"Permissions for '{file_directory}' changed using symbolic mode: {permission}", rchCommandLine, false);
+            }
+            else
+            {
+                Feature.AddToCommandList($"Error: Invalid permission format '{permission}'. Use numeric (e.g., 755) or symbolic (e.g., u+rwx) format", rchCommandLine, false);
+            }
+            Save();
+        }
+
+        // متد کمکی برای تشخیص فرمت نمادین
+        private bool IsSymbolicPermission(string permission)
+        {
+            // الگوی ساده برای فرمت نمادین (مثل u+rwx,g+rx,o+r)
+            var pattern = @"^([ownergroupother]*[+=-][rwxXst]*,?)+$";
+            return Regex.IsMatch(permission, pattern, RegexOptions.IgnoreCase);
+        }
+
+        // متد کمکی برای اعمال مجوزهای نمادین
+        private void ApplySymbolicPermission(Node node, string symbolicPermission, RichTextBox rchCommandLine, ref char[] permissionchars)
+        {
+            string[] parts = symbolicPermission.Split(',');
+
+            foreach (var part in parts)
+            {
+                if (part.Contains("+"))
+                {
+                    string[] a = part.Split('+');
+                    if (a[0] == "owner")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[0] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[1] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[2] = 'x';
+                        }
+                    }
+                    else if (a[0] == "group")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[3] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[4] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[5] = 'x';
+                        }
+                    }
+                    else if (a[0] == "other")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[6] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[7] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[8] = 'x';
+                        }
+                    }
+                }
+                else if (part.Contains("-"))
+                {
+                    string[] a = part.Split('-');
+                    if (a[0] == "owner")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[0] = '-';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[1] = '-';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[2] = '-';
+                        }
+                    }
+                    else if (a[0] == "group")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[3] = '-';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[4] = '-';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[5] = '-';
+                        }
+                    }
+                    else if (a[0] == "other")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[6] = '-';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[7] = '-';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[8] = '-';
+                        }
+                    }
+                }
+                else if (part.Contains("="))
+                {
+                    string[] a = part.Split('=');
+                    if (a[0] == "owner")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[0] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[1] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[2] = 'x';
+                        }
+                    }
+                    else if (a[0] == "group")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[3] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[4] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[5] = 'x';
+                        }
+                    }
+                    else if (a[0] == "other")
+                    {
+                        char[] b = a[1].ToCharArray();
+                        if (b.Contains('r'))
+                        {
+                            permissionchars[6] = 'r';
+                        }
+                        if (b.Contains('w'))
+                        {
+                            permissionchars[7] = 'w';
+                        }
+                        if (b.Contains('x'))
+                        {
+                            permissionchars[8] = 'x';
+                        }
+                    }
+                }
+            }
+        }
         public void Find(string path, string option, string pattern, RichTextBox rchCommandLine)
         {
             Directory _SearchDirectory;

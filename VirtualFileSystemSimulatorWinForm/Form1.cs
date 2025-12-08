@@ -179,6 +179,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "find":
                     FindCommand(_InputArray, rchCommandList);
                     break;
+                case "chmod":
+                    ChmodCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -311,6 +314,13 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 string _Pattern = inputs[3].Trim().Trim('"');
                 Fs.Find(inputs[1], inputs[2], _Pattern, commandList);
+            }
+        }
+        public void ChmodCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 3, 3 , rchCommandList))
+            {
+                Fs.Chmod(inputs[1], inputs[2], commandList);
             }
         }
         public void LsCommand(string[] inputs, RichTextBox commandList)
