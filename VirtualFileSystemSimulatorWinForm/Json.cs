@@ -166,10 +166,10 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
-        public Node LoadVfsForCurrentUser(string systemname)
+        public Node LoadVfsForCurrentUser(string systemname , string commitversion)
         {
             if (CurrentUser == null) return null;
-            string userVfsFile = $"vfs_{systemname}.json";
+            string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
 
             // اگر فایل وجود نداشت، VFS جدید ایجاد کن
             if (!System.IO.File.Exists(userVfsFile))
@@ -185,11 +185,11 @@ namespace VirtualFileSystemSimulatorWinForm
 
 
         // ذخیره VFS برای کاربر جاری
-        public void SaveVfsForCurrentUser(Node root, string systemname)
+        public void SaveVfsForCurrentUser(Node root, string systemname , string commitversion)
         {
             if (CurrentUser == null) return;
 
-            string userVfsFile = $"vfs_{systemname}.json";
+            string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
 
             // ساخت دیکشنری از Nodeها
             var data = root.ToDictBase();

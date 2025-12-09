@@ -182,6 +182,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "chmod":
                     ChmodCommand(_InputArray, rchCommandList);
                     break;
+                case "revert":
+                    RevertCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -264,9 +267,18 @@ namespace VirtualFileSystemSimulatorWinForm
         // For Load Another FileSystem
         public void LoadCommand(string[] inputs, RichTextBox commandList)
         {
+            if (Feature.CheckLength(inputs, 2, 3, rchCommandList))
+            {
+                string _CommitVersion = "main";
+                if (inputs.Length == 3) _CommitVersion = inputs[2];
+                Fs.LoadAnotherSystemFile(inputs[1], _CommitVersion, commandList);
+            }
+        }
+        public void RevertCommand(string[] inputs, RichTextBox commandList)
+        {
             if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
             {
-                Fs.LoadAnotherSystemFile(inputs[1], commandList);
+                Fs.Revert(inputs[1], commandList);
             }
         }
         public void AddGroupCommand(string[] inputs, RichTextBox commandList)
@@ -318,7 +330,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void ChmodCommand(string[] inputs, RichTextBox commandList)
         {
-            if (Feature.CheckLength(inputs, 3, 3 , rchCommandList))
+            if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
             {
                 Fs.Chmod(inputs[1], inputs[2], commandList);
             }

@@ -17,25 +17,27 @@ namespace VirtualFileSystemSimulatorWinForm
         public Features Feature = new Features();
         public Json UserManager { get; set; }
         public string SystemName { get; set; }
+        public string CommitVersion { get; set; }
 
         public SystemFile(Json userManager)
         {
             UserManager = userManager;
             SystemName = UserManager.CurrentUser.Username;
-            Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+            CommitVersion = "main";
+            Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName, CommitVersion);
             CurrentDirectory = Root;
         }
 
         // ذخیره بعد از عملیات
         public void Save()
         {
-            UserManager.SaveVfsForCurrentUser(Root, SystemName);
+            UserManager.SaveVfsForCurrentUser(Root, SystemName, CommitVersion);
         }
 
         //برای گروه بندی ها 
         //همه اول زیر مجموعه ادمین هستن
         //گروه اسم owner افراد هستش
-        public void LoadAnotherSystemFile(string systemname, RichTextBox rchCommandLine)
+        public void LoadAnotherSystemFile(string systemname, string commitversion, RichTextBox rchCommandLine)
         {
             if (!UserManager.UserIsExist(systemname))
             {
@@ -53,7 +55,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 SystemName = systemname;
                 UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Admin;
-                Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+                Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName, commitversion);
                 CurrentDirectory = Root;
                 return;
             }
@@ -79,7 +81,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         default:
                             break;
                     }
-                    Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName);
+                    Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName, commitversion);
                     CurrentDirectory = Root;
                     return;
                 }
@@ -1609,6 +1611,11 @@ namespace VirtualFileSystemSimulatorWinForm
             regexPattern = "^" + regexPattern + "$";
 
             return Regex.IsMatch(fileName, regexPattern, RegexOptions.IgnoreCase);
+        }
+
+        public void Revert(string commitrevert, RichTextBox rchCommandLine)
+        {
+            LoadAnotherSystemFile(SystemName, commitrevert, rchCommandLine);
         }
     }
 
