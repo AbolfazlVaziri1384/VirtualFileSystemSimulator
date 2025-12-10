@@ -1617,6 +1617,17 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             LoadAnotherSystemFile(SystemName, commitrevert, rchCommandLine);
         }
+        public void Commit(string commitname, RichTextBox rchCommandLine)
+        {
+            if (UserManager.CopyVfsWithCommit(SystemName, CommitVersion, commitname))
+            {
+                Feature.AddToCommandList("Success", rchCommandLine, false);
+                return;
+
+            } 
+            Feature.AddToCommandList("failed", rchCommandLine, false);
+                return;
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -200,6 +201,151 @@ namespace VirtualFileSystemSimulatorWinForm
             System.IO.File.WriteAllText(userVfsFile, jsonData);
         }
 
+
+        /// <summary>
+        /// فایل VFS را با یک کامیت جدید کپی می‌کند
+        /// </summary>
+        /// <param name="systemname">نام سیستم</param>
+        /// <param name="sourcecommit">کامیت مبدأ</param>
+        /// <param name="newcommit">کامیت جدید</param>
+        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
+        public bool CopyVfsWithCommit(string systemname, string sourcecommit, string newcommit)
+        {
+            if (CurrentUser == null)
+                return false;
+
+            string _SourceFile = $"vfs_{systemname}_{sourcecommit}.json";
+            string _DestinationFile = $"vfs_{systemname}_{newcommit}.json";
+
+            // بررسی وجود فایل مبدأ
+            if (!System.IO.File.Exists(_SourceFile))
+            {
+                // اگر فایل مبدأ وجود نداشت، یک VFS جدید ایجاد کن
+                var newRoot = new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
+                SaveVfsForCurrentUser(newRoot, systemname, newcommit);
+                return true;
+            }
+
+            try
+            {
+                // کپی کردن فایل
+                System.IO.File.Copy(_SourceFile, _DestinationFile, overwrite: true);
+
+                // (اختیاری) می‌توانید اطلاعات کامیت را در فایل ذخیره کنید
+                // AddCommitInfoToFile(destinationFile, newCommit);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // در اینجا می‌توانید خطا را لاگ کنید
+                Console.WriteLine($"خطا در کپی فایل: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// نسخه جدیدی از آخرین کامیت ایجاد می‌کند
+        /// </summary>
+        /// <param name="systemname">نام سیستم</param>
+        /// <param name="newcommitname">نام کامیت جدید</param>
+        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
+        public bool CreateNewCommit(string systemname, string newcommitname)
+        {
+            if (CurrentUser == null)
+                return false;
+
+            // پیدا کردن آخرین فایل VFS برای این سیستم
+            var files = System.IO.Directory.GetFiles(System.IO.Directory.GetCurrentDirectory(), $"vfs_{systemname}_*.json");
+
+            if (files.Length == 0)
+            {
+                // اگر فایلی وجود نداشت، یک VFS جدید ایجاد کن
+                var newRoot = new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
+                SaveVfsForCurrentUser(newRoot, systemname, newcommitname);
+                return true;
+            }
+
+            // پیدا کردن آخرین فایل براساس تاریخ
+            var latestFile = files
+                .Select(f => new FileInfo(f))
+                .OrderByDescending(f => f.LastWriteTime)
+                .FirstOrDefault();
+
+            if (latestFile != null)
+            {
+                // استخراج نام کامیت از نام فایل
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(latestFile.Name);
+                string[] parts = fileNameWithoutExtension.Split('_');
+
+                if (parts.Length >= 3)
+                {
+                    string lastCommit = parts[2]; // بخش کامیت
+                    return CopyVfsWithCommit(systemname, lastCommit, newcommitname);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// همه کامیت‌های یک سیستم را لیست می‌کند
+        /// </summary>
+        /// <param name="systemname">نام سیستم</param>
+        /// <returns>لیست کامیت‌ها</returns>
+        public List<string> GetAllCommits(string systemname)
+        {
+            var commits = new List<string>();
+
+            try
+            {
+                var files = System.IO.Directory.GetFiles(System.IO.Directory.GetCurrentDirectory(), $"vfs_{systemname}_*.json");
+
+                foreach (var file in files)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string[] parts = fileName.Split('_');
+
+                    if (parts.Length >= 3)
+                    {
+                        commits.Add(parts[2]); // اضافه کردن نام کامیت
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطا در خواندن کامیت‌ها: {ex.Message}");
+            }
+
+            return commits;
+        }
+
+        /// <summary>
+        /// حذف یک کامیت خاص
+        /// </summary>
+        /// <param name="systemname">نام سیستم</param>
+        /// <param name="commit">نام کامیت</param>
+        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
+        public bool DeleteCommit(string systemname, string commit)
+        {
+            try
+            {
+                string fileToDelete = $"vfs_{systemname}_{commit}.json";
+
+                if (System.IO.File.Exists(fileToDelete))
+                {
+                    System.IO.File.Delete(fileToDelete);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطا در حذف کامیت: {ex.Message}");
+                return false;
+            }
+        }
 
     }
 

@@ -185,6 +185,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "revert":
                     RevertCommand(_InputArray, rchCommandList);
                     break;
+                case "commit":
+                    CommitCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -279,6 +282,13 @@ namespace VirtualFileSystemSimulatorWinForm
             if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
             {
                 Fs.Revert(inputs[1], commandList);
+            }
+        }
+        public void CommitCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            {
+                Fs.Commit(inputs[1], commandList);
             }
         }
         public void AddGroupCommand(string[] inputs, RichTextBox commandList)

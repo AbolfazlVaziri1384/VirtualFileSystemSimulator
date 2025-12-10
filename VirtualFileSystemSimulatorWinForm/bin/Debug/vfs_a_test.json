@@ -103,15 +103,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "hasan",
-      "timestamp": "2025-12-10 16:14",
-      "permissions": "rwxr-xr-x",
-      "owner": "a",
-      "group": "admin",
-      "is_dir": true,
-      "children": []
     }
   ]
 }
