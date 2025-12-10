@@ -51,10 +51,18 @@ namespace VirtualFileSystemSimulatorWinForm
                 _UsersAdnGroups[i, 1] = UserManager.CurrentUser.Groups.Split('/')[i].Split(',')[1];
             }
             systemname = systemname.ToLower();
+            if (!UserManager.GetAllCommits(systemname).Contains(commitversion))
+            {
+                Feature.AddToCommandList("This Commit of SystemFile is not exist", rchCommandLine, false);
+                return;
+            }
             if (systemname == UserManager.CurrentUser.Username)
             {
                 SystemName = systemname;
                 UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Admin;
+
+                CommitVersion = commitversion;
+
                 Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName, commitversion);
                 CurrentDirectory = Root;
                 return;
@@ -81,6 +89,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         default:
                             break;
                     }
+                    CommitVersion = commitversion;
                     Root = (Directory)UserManager.LoadVfsForCurrentUser(SystemName, commitversion);
                     CurrentDirectory = Root;
                     return;
@@ -1624,9 +1633,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 Feature.AddToCommandList("Success", rchCommandLine, false);
                 return;
 
-            } 
+            }
             Feature.AddToCommandList("failed", rchCommandLine, false);
-                return;
+            return;
         }
     }
 

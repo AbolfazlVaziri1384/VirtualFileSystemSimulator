@@ -288,6 +288,11 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
             {
+                if (inputs[1] == "-v")
+                {
+                    Feature.AddToCommandList($"Commit Version : {Fs.CommitVersion}", rchCommandList, false);
+                    return;
+                }
                 Fs.Commit(inputs[1], commandList);
             }
         }
