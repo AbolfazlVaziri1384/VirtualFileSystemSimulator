@@ -1641,7 +1641,23 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             foreach (var item in UserManager.GetAllCommits(SystemName))
                 Feature.AddToCommandList($"{item}", rchCommandLine, false);
+        }
+        public void DeleteCommit(string commitname, RichTextBox rchCommandLine)
+        {
+            if (commitname == CommitVersion)
+            {
+                Feature.AddToCommandList("You already in this commit ,so you can not delete this", rchCommandLine, false);
+                return;
+            }
 
+            if (UserManager.DeleteCommit(SystemName, commitname))
+            {
+                Feature.AddToCommandList("Success", rchCommandLine, false);
+                return;
+
+            }
+            Feature.AddToCommandList("failed", rchCommandLine, false);
+            return;
         }
     }
 

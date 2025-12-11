@@ -286,7 +286,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
         public void CommitCommand(string[] inputs, RichTextBox commandList)
         {
-            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            if (Feature.CheckLength(inputs, 2, 3, rchCommandList))
             {
                 if (inputs[1] == "-v")
                 {
@@ -298,7 +298,26 @@ namespace VirtualFileSystemSimulatorWinForm
                     Fs.CommitList(commandList);
                     return;
                 }
-                Fs.Commit(inputs[1], commandList);
+                else if (inputs[1] == "-m")
+                {
+                    if (inputs.Length < 3 || inputs[2] == "\"\"")
+                    {
+                        Feature.AddToCommandList("NAme ?", rchCommandList, false);
+                        return;
+                    }
+                    Fs.Commit(inputs[2].Trim().Trim('"'), commandList);
+                    return;
+                }
+                else if (inputs[1] == "-d")
+                {
+                    if (inputs.Length < 3 || inputs[2] == "\"\"")
+                    {
+                        Feature.AddToCommandList("NAme ?", rchCommandList, false);
+                        return;
+                    }
+                    Fs.DeleteCommit(inputs[2].Trim().Trim('"'), commandList);
+                    return;
+                }
             }
         }
         public void AddGroupCommand(string[] inputs, RichTextBox commandList)
