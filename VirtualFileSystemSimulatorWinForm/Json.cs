@@ -245,50 +245,6 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         /// <summary>
-        /// نسخه جدیدی از آخرین کامیت ایجاد می‌کند
-        /// </summary>
-        /// <param name="systemname">نام سیستم</param>
-        /// <param name="newcommitname">نام کامیت جدید</param>
-        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
-        public bool CreateNewCommit(string systemname, string newcommitname)
-        {
-            if (CurrentUser == null)
-                return false;
-
-            // پیدا کردن آخرین فایل VFS برای این سیستم
-            var files = System.IO.Directory.GetFiles(System.IO.Directory.GetCurrentDirectory(), $"vfs_{systemname}_*.json");
-
-            if (files.Length == 0)
-            {
-                // اگر فایلی وجود نداشت، یک VFS جدید ایجاد کن
-                var newRoot = new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
-                SaveVfsForCurrentUser(newRoot, systemname, newcommitname);
-                return true;
-            }
-
-            // پیدا کردن آخرین فایل براساس تاریخ
-            var latestFile = files
-                .Select(f => new FileInfo(f))
-                .OrderByDescending(f => f.LastWriteTime)
-                .FirstOrDefault();
-
-            if (latestFile != null)
-            {
-                // استخراج نام کامیت از نام فایل
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(latestFile.Name);
-                string[] parts = fileNameWithoutExtension.Split('_');
-
-                if (parts.Length >= 3)
-                {
-                    string lastCommit = parts[2]; // بخش کامیت
-                    return CopyVfsWithCommit(systemname, lastCommit, newcommitname);
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// همه کامیت‌های یک سیستم را لیست می‌کند
         /// </summary>
         /// <param name="systemname">نام سیستم</param>

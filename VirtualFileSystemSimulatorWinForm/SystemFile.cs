@@ -1637,6 +1637,12 @@ namespace VirtualFileSystemSimulatorWinForm
             Feature.AddToCommandList("failed", rchCommandLine, false);
             return;
         }
+        public void CommitList(RichTextBox rchCommandLine)
+        {
+            foreach (var item in UserManager.GetAllCommits(SystemName))
+                Feature.AddToCommandList($"{item}", rchCommandLine, false);
+
+        }
     }
 
 }

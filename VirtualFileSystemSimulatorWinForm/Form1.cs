@@ -293,6 +293,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     Feature.AddToCommandList($"Commit Version : {Fs.CommitVersion}", rchCommandList, false);
                     return;
                 }
+                else if (inputs[1] == "-l")
+                {
+                    Fs.CommitList(commandList);
+                    return;
+                }
                 Fs.Commit(inputs[1], commandList);
             }
         }
