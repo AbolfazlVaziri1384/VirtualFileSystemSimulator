@@ -12,12 +12,19 @@ namespace VirtualFileSystemSimulatorWinForm
 {
     public class Json
     {
+        private readonly string _jsonFolderPath = "VFS_JsonFiles";
         private readonly string _usersFile = "users.json";
         private Dictionary<string, User> _users = new Dictionary<string, User>();
         public User CurrentUser { get; private set; }
 
         public Json()
         {
+            // ایجاد پوشه VFS_JsonFiles در صورت عدم وجود
+            if (!System.IO.Directory.Exists(_jsonFolderPath))
+            {
+                System.IO.Directory.CreateDirectory(_jsonFolderPath);
+            }
+
             LoadUsers();
             if (!_users.ContainsKey("admin"))
             {
@@ -25,11 +32,18 @@ namespace VirtualFileSystemSimulatorWinForm
             }
         }
 
+        // متد کمکی برای ساخت مسیر کامل فایل
+        private string GetFullPath(string fileName)
+        {
+            return Path.Combine(_jsonFolderPath, fileName);
+        }
+
         private void LoadUsers()
         {
-            if (System.IO.File.Exists(_usersFile))
+            string fullPath = GetFullPath(_usersFile);
+            if (System.IO.File.Exists(fullPath))
             {
-                var json = System.IO.File.ReadAllText(_usersFile);
+                var json = System.IO.File.ReadAllText(fullPath);
                 var usersList = JsonSerializer.Deserialize<List<User>>(json);
                 foreach (var user in usersList)
                 {
@@ -41,7 +55,8 @@ namespace VirtualFileSystemSimulatorWinForm
         private void SaveUsers()
         {
             var json = JsonSerializer.Serialize(_users.Values.ToList());
-            System.IO.File.WriteAllText(_usersFile, json);
+            string fullPath = GetFullPath(_usersFile);
+            System.IO.File.WriteAllText(fullPath, json);
         }
 
         public bool UserIsExist(string username)
@@ -167,30 +182,30 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
-        public Node LoadVfsForCurrentUser(string systemname , string commitversion)
+        public Node LoadVfsForCurrentUser(string systemname, string commitversion)
         {
             if (CurrentUser == null) return null;
             string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
+            string fullPath = GetFullPath(userVfsFile);
 
             // اگر فایل وجود نداشت، VFS جدید ایجاد کن
-            if (!System.IO.File.Exists(userVfsFile))
+            if (!System.IO.File.Exists(fullPath))
                 return new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
 
-            var jsonString = System.IO.File.ReadAllText(userVfsFile);
+            var jsonString = System.IO.File.ReadAllText(fullPath);
 
             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
 
             return Node.FromDict(data);
         }
 
-
-
         // ذخیره VFS برای کاربر جاری
-        public void SaveVfsForCurrentUser(Node root, string systemname , string commitversion)
+        public void SaveVfsForCurrentUser(Node root, string systemname, string commitversion)
         {
             if (CurrentUser == null) return;
 
             string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
+            string fullPath = GetFullPath(userVfsFile);
 
             // ساخت دیکشنری از Nodeها
             var data = root.ToDictBase();
@@ -198,24 +213,16 @@ namespace VirtualFileSystemSimulatorWinForm
             // Serialize با WriteIndented تا خوانا باشد
             var jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 
-            System.IO.File.WriteAllText(userVfsFile, jsonData);
+            System.IO.File.WriteAllText(fullPath, jsonData);
         }
 
-
-        /// <summary>
-        /// فایل VFS را با یک کامیت جدید کپی می‌کند
-        /// </summary>
-        /// <param name="systemname">نام سیستم</param>
-        /// <param name="sourcecommit">کامیت مبدأ</param>
-        /// <param name="newcommit">کامیت جدید</param>
-        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
         public bool CopyVfsWithCommit(string systemname, string sourcecommit, string newcommit)
         {
             if (CurrentUser == null)
                 return false;
 
-            string _SourceFile = $"vfs_{systemname}_{sourcecommit}.json";
-            string _DestinationFile = $"vfs_{systemname}_{newcommit}.json";
+            string _SourceFile = GetFullPath($"vfs_{systemname}_{sourcecommit}.json");
+            string _DestinationFile = GetFullPath($"vfs_{systemname}_{newcommit}.json");
 
             // بررسی وجود فایل مبدأ
             if (!System.IO.File.Exists(_SourceFile))
@@ -244,22 +251,18 @@ namespace VirtualFileSystemSimulatorWinForm
             }
         }
 
-        /// <summary>
-        /// همه کامیت‌های یک سیستم را لیست می‌کند
-        /// </summary>
-        /// <param name="systemname">نام سیستم</param>
-        /// <returns>لیست کامیت‌ها</returns>
         public List<string> GetAllCommits(string systemname)
         {
             var commits = new List<string>();
 
             try
             {
-                var files = System.IO.Directory.GetFiles(System.IO.Directory.GetCurrentDirectory(), $"vfs_{systemname}_*.json");
+                string searchPattern = $"vfs_{systemname}_*.json";
+                var files = System.IO.Directory.GetFiles(_jsonFolderPath, searchPattern);
 
                 foreach (var file in files)
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
                     string[] parts = fileName.Split('_');
 
                     if (parts.Length >= 3)
@@ -276,17 +279,11 @@ namespace VirtualFileSystemSimulatorWinForm
             return commits;
         }
 
-        /// <summary>
-        /// حذف یک کامیت خاص
-        /// </summary>
-        /// <param name="systemname">نام سیستم</param>
-        /// <param name="commit">نام کامیت</param>
-        /// <returns>true اگر عملیات موفقیت‌آمیز باشد</returns>
         public bool DeleteCommit(string systemname, string commit)
         {
             try
             {
-                string fileToDelete = $"vfs_{systemname}_{commit}.json";
+                string fileToDelete = GetFullPath($"vfs_{systemname}_{commit}.json");
 
                 if (System.IO.File.Exists(fileToDelete))
                 {
@@ -302,8 +299,5 @@ namespace VirtualFileSystemSimulatorWinForm
                 return false;
             }
         }
-
     }
-
-
 }
