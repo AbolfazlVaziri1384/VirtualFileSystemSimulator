@@ -280,40 +280,66 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
 
-                if (!_FileName.StartsWith("."))
+                if (_FileName.StartsWith("."))
                 {
-                    // Check existing for hiden file
-                    if (_ParentDirectory.FindChild(_FileName.Split('.')[0]) != null)
+                    string[] parts = _FileName.Split('.');
+                    // فایل مخفی - نام کامل را چک می‌کنیم
+                    if (_ParentDirectory.FindChild('.' + parts[1]) != null)
                     {
-                        Feature.AddToCommandList($"'{_FileName}' already exists", rchCommandLine, false);
+                        Feature.AddToCommandList($"'{'.' + parts[1]}' already exists", rchCommandLine, false);
                         return;
                     }
                 }
                 else
                 {
-                    // Check existing for normal file
-                    if (_ParentDirectory.FindChild(_FileName.Split('.')[1]) != null)
+                    // فایل عادی - نام بدون پسوند را چک می‌کنیم
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(_FileName);
+                    if (_ParentDirectory.FindChild(fileNameWithoutExtension) != null)
                     {
                         Feature.AddToCommandList($"'{_FileName}' already exists", rchCommandLine, false);
                         return;
                     }
                 }
 
-                // Making new file
-                string _FileExtension = Path.GetExtension(_FileName).TrimStart('.');
-                if (string.IsNullOrEmpty(_FileExtension))
-                    _FileExtension = "txt";
+                // استخراج پسوند فایل
+                string _FileExtension;
+                if (_FileName.StartsWith("."))
+                {
+                    // برای فایل‌های مخفی مانند ".ali.pdf" یا ".ali"
+                    string[] parts = _FileName.Split('.');
+                    if (parts.Length > 2 && !string.IsNullOrEmpty(parts[parts.Length - 1]))
+                    {
+                        // فایل‌هایی مانند ".ali.pdf" - پسوند "pdf"
+                        _FileExtension = parts[parts.Length - 1];
+                    }
+                    else
+                    {
+                        // فایل‌هایی مانند ".ali" - پسوند "txt" به صورت پیش‌فرض
+                        _FileExtension = "txt";
+                    }
+                }
+                else
+                {
+                    // برای فایل‌های عادی
+                    _FileExtension = Path.GetExtension(_FileName).TrimStart('.').Trim();
+                    if (string.IsNullOrEmpty(_FileExtension))
+                        _FileExtension = "txt";
+                }
 
+                // ساخت فایل جدید
                 File _NewFile;
-                if (!_FileName.StartsWith("."))
+                if (_FileName.StartsWith("."))
                 {
-                    // For files we can show there
-                    _NewFile = new File(_FileName.Split('.')[0], fileType: _FileExtension, owner: UserManager.CurrentUser.Username);
+                    // برای فایل‌های مخفی - نام کامل را حفظ می‌کنیم
+                    string[] parts = _FileName.Split('.');
+                    _NewFile = new File('.' + parts[1], fileType: _FileExtension, owner: UserManager.CurrentUser.Username);
                 }
                 else
                 {
-                    // For files we can not show there
-                    _NewFile = new File("." + _FileName.Split('.')[1], fileType: _FileExtension, owner: UserManager.CurrentUser.Username);
+                    // برای فایل‌های عادی - فقط نام فایل بدون پسوند
+                    _NewFile = new File(Path.GetFileNameWithoutExtension(_FileName),
+                                       fileType: _FileExtension,
+                                       owner: UserManager.CurrentUser.Username);
                 }
                 // Add custom time if it exist
                 if (!string.IsNullOrEmpty(customtime))
@@ -1021,7 +1047,7 @@ namespace VirtualFileSystemSimulatorWinForm
                         Feature.AddToCommandList($"Access Denied: You don't have read permission for file '{file.Name}'.", rchCommandLine, false);
                         return;
                     }
-
+                    
                     if (file.IsLink == false)
                     {
                         Feature.AddToCommandList($"=== Content of '{file.Name}' ===", rchCommandLine, false);

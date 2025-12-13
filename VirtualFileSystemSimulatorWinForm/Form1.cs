@@ -129,12 +129,15 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "ls":
                     LsCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "cd":
                     CdCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "pwd":
                     PwdCommand(_InputArray);
+                    UpdateTreeView(TreeView);
                     break;
                 case "rm":
                     RmCommand(_InputArray, rchCommandList);
@@ -142,12 +145,15 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "usertype":
                     UserTypeCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "changeusertype":
                     ChangeUserTypeCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "tree":
                     TreeCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "ln":
                     LnCommand(_InputArray, rchCommandList);
@@ -159,9 +165,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "echo":
                     EchoCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "cat":
                     CatCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "mv":
                     MvCommand(_InputArray, rchCommandList);
@@ -173,21 +181,27 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "load":
                     LoadCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "addgroup":
                     AddGroupCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "rmgroup":
                     RemoveGroupCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "systemfile":
                     SystemFileCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "find":
                     FindCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "chmod":
                     ChmodCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "revert":
                     RevertCommand(_InputArray, rchCommandList);
@@ -195,6 +209,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "commit":
                     CommitCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "open":
                     OpenTreeViewCommand(_InputArray, rchCommandList);
