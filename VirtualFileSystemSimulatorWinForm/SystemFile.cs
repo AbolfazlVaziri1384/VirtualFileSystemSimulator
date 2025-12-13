@@ -367,7 +367,7 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // For detect Relative or Absolute path
-        private Node ResolvePath(string path, RichTextBox rchCommandLine)
+        public Node ResolvePath(string path, RichTextBox rchCommandLine)
         {
             if (path.StartsWith("/"))
             {
@@ -956,44 +956,137 @@ namespace VirtualFileSystemSimulatorWinForm
         // For show file's content
         public void Cat(string path, RichTextBox rchCommandLine)
         {
+            // بررسی مسیر ورودی
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                Feature.AddToCommandList("Error: Please specify a file path. Usage: cat <filename> or cat <path/to/file>", rchCommandLine, false);
+                return;
+            }
+
             string _DirectoryPath = NodePathToString(CurrentDirectory);
             if (path.StartsWith(".") || path.StartsWith("/"))
                 _DirectoryPath = GetDirectoryPath(path);
 
             string _FileName = GetFileName(path);
 
+            // بررسی نام فایل
+            if (string.IsNullOrWhiteSpace(_FileName))
+            {
+                Feature.AddToCommandList("Error: Please provide a valid file name.", rchCommandLine, false);
+                return;
+            }
+
             Directory _ParentDirectory;
             if (_DirectoryPath == ".")
             {
                 _ParentDirectory = CurrentDirectory;
+                Feature.AddToCommandList($"Looking for file '{_FileName}' in current directory...", rchCommandLine, false);
             }
             else
             {
+                Feature.AddToCommandList($"Looking for file '{_FileName}' in directory '{_DirectoryPath}'...", rchCommandLine, false);
                 var dirNode = ResolvePath(_DirectoryPath, rchCommandLine);
                 if (dirNode is Directory directory)
                 {
                     _ParentDirectory = directory;
                 }
+                else if (dirNode == null)
+                {
+                    Feature.AddToCommandList($"Error: Directory '{_DirectoryPath}' does not exist.", rchCommandLine, false);
+                    return;
+                }
                 else
                 {
-                    Feature.AddToCommandList($"'{_DirectoryPath}' is not a directory", rchCommandLine, false);
+                    Feature.AddToCommandList($"Error: '{_DirectoryPath}' is not a directory.", rchCommandLine, false);
                     return;
                 }
             }
+
+            // بررسی دسترسی
             if (!UserManager.CurrentUser.HasPermission(_ParentDirectory, "r"))
             {
-                Feature.AddToCommandList("You do not have Permission to read file's content", rchCommandLine, false);
+                Feature.AddToCommandList($"Access Denied: You don't have read permission for directory '{_ParentDirectory.Name}'.", rchCommandLine, false);
+                Feature.AddToCommandList("Required permission: Read (r)", rchCommandLine, false);
                 return;
             }
-            if (_ParentDirectory.FindChild(_FileName) != null)
+
+            var foundNode = _ParentDirectory.FindChild(_FileName);
+            if (foundNode != null)
             {
-                File file = (File)_ParentDirectory.FindChild(_FileName);
-                Feature.AddToCommandList($"{file.Content}", rchCommandLine, false);
-                return;
+                if (foundNode is File file)
+                {
+                    // بررسی دسترسی فایل
+                    if (!UserManager.CurrentUser.HasPermission(file, "r"))
+                    {
+                        Feature.AddToCommandList($"Access Denied: You don't have read permission for file '{file.Name}'.", rchCommandLine, false);
+                        return;
+                    }
+
+                    if (file.IsLink == false)
+                    {
+                        Feature.AddToCommandList($"=== Content of '{file.Name}' ===", rchCommandLine, false);
+
+                        if (string.IsNullOrEmpty(file.Content))
+                        {
+                            Feature.AddToCommandList("[File is empty]", rchCommandLine, false);
+                        }
+                        else
+                        {
+                            Feature.AddToCommandList($"{file.Content}", rchCommandLine, false);
+                        }
+
+                        Feature.AddToCommandList($"=== End of file ({file.Content?.Length ?? 0} characters) ===", rchCommandLine, false);
+                    }
+                    else
+                    {
+                        Feature.AddToCommandList($"Note: '{file.Name}' is a symbolic link.", rchCommandLine, false);
+                        Feature.AddToCommandList($"Link target: {file.Link}", rchCommandLine, false);
+
+                        var linkedNode = ResolvePath(file.Link, rchCommandLine);
+                        if (linkedNode is Directory linkedDir)
+                        {
+                            Feature.AddToCommandList($"Following link to directory: {file.Link}", rchCommandLine, false);
+                            CurrentDirectory = linkedDir;
+                            Feature.AddToCommandList($"Current directory changed to: {NodePathToString(CurrentDirectory)}", rchCommandLine, false);
+                        }
+                        else if (linkedNode is File linkedFile)
+                        {
+                            Feature.AddToCommandList($"Following link to file: {linkedFile.Name}", rchCommandLine, false);
+
+                            // بررسی دسترسی فایل مقصد
+                            if (!UserManager.CurrentUser.HasPermission(linkedFile, "r"))
+                            {
+                                Feature.AddToCommandList($"Access Denied: You don't have read permission for target file '{linkedFile.Name}'.", rchCommandLine, false);
+                                return;
+                            }
+
+                            Feature.AddToCommandList($"=== Content of linked file '{linkedFile.Name}' ===", rchCommandLine, false);
+
+                            if (string.IsNullOrEmpty(linkedFile.Content))
+                            {
+                                Feature.AddToCommandList("[File is empty]", rchCommandLine, false);
+                            }
+                            else
+                            {
+                                Feature.AddToCommandList($"{linkedFile.Content}", rchCommandLine, false);
+                            }
+
+                            Feature.AddToCommandList($"=== End of linked file ({linkedFile.Content?.Length ?? 0} characters) ===", rchCommandLine, false);
+                        }
+                        else
+                        {
+                            Feature.AddToCommandList($"Warning: Broken link - target '{file.Link}' not found.", rchCommandLine, false);
+                        }
+                    }
+                }
+                else if (foundNode is Directory)
+                {
+                    Feature.AddToCommandList($"Error: '{_FileName}' is a directory, not a file.", rchCommandLine, false);
+                }
             }
             else
             {
-                Feature.AddToCommandList($"'{_FileName}' is not exist", rchCommandLine, false);
+                Feature.AddToCommandList($"Error: File '{_FileName}' not found in '{_ParentDirectory.Name}'.", rchCommandLine, false);
                 return;
             }
         }

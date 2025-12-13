@@ -111,7 +111,20 @@
       "owner": "a",
       "group": "admin",
       "is_dir": true,
-      "children": []
+      "children": [
+        {
+          "name": "linkmom",
+          "timestamp": "2025-12-13 04:00",
+          "permissions": "rw-r--r--",
+          "owner": "a",
+          "group": "admin",
+          "is_dir": false,
+          "content": "",
+          "file_type": "txt",
+          "is_link": true,
+          "link": "/ali/abol"
+        }
+      ]
     }
   ]
 }

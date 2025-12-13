@@ -121,9 +121,11 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 case "mkdir":
                     MkdirCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "touch":
                     TouchCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "ls":
                     LsCommand(_InputArray, rchCommandList);
@@ -136,6 +138,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "rm":
                     RmCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "usertype":
                     UserTypeCommand(_InputArray, rchCommandList);
@@ -148,9 +151,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "ln":
                     LnCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "stat":
                     StatCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "echo":
                     EchoCommand(_InputArray, rchCommandList);
@@ -160,9 +165,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "mv":
                     MvCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "cp":
                     CpCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "load":
                     LoadCommand(_InputArray, rchCommandList);
@@ -184,16 +191,22 @@ namespace VirtualFileSystemSimulatorWinForm
                     break;
                 case "revert":
                     RevertCommand(_InputArray, rchCommandList);
+                    UpdateTreeView(TreeView);
                     break;
                 case "commit":
                     CommitCommand(_InputArray, rchCommandList);
+                    break;
+                case "open":
+                    OpenTreeViewCommand(_InputArray, rchCommandList);
+                    break;
+                case "close":
+                    CloseTreeViewCommand(_InputArray, rchCommandList);
                     break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
             }
             UpdateCurrentRoute(Fs.CurrentDirectory, txtCurrentRoute);
-            UpdateTreeView(TreeView);
             rchCommandList.ScrollToCaret();
         }
 
@@ -265,6 +278,25 @@ namespace VirtualFileSystemSimulatorWinForm
             if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
             {
                 Fs.Cp(inputs, commandList);
+            }
+        }
+        public void OpenTreeViewCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
+            {
+                if (inputs[1] == "-a")
+                    OpenAllTreeView(TreeView);
+                else if (inputs[1] == "-c")
+                    KeepOnlyCurrentPathExpanded(TreeView);
+                else if (!string.IsNullOrEmpty(inputs[1]))
+                    KeepOnlyPathExpanded(inputs[1] , TreeView);
+            }
+        }
+        public void CloseTreeViewCommand(string[] inputs, RichTextBox commandList)
+        {
+            if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
+            {
+                CloseAllTreeView(TreeView);
             }
         }
         // For Load Another FileSystem
@@ -584,6 +616,83 @@ namespace VirtualFileSystemSimulatorWinForm
                 Console.WriteLine($"Error updating current route: {ex.Message}");
             }
         }
+        private void OpenAllTreeView(System.Windows.Forms.TreeView treeview)
+        {
+            treeview.ExpandAll();
+        }
+        private void CloseAllTreeView(System.Windows.Forms.TreeView treeview)
+        {
+            treeview.CollapseAll();
+        }
+        private void KeepOnlyPathExpanded(string path, System.Windows.Forms.TreeView treeView)
+        {
+            // ابتدا همه گره‌ها را ببندید
+            treeView.CollapseAll();
+            TreeNode currentNode = null;
+
+            // گره مربوط به دایرکتوری جاری را پیدا کنید
+            if (Fs.ResolvePath(path, rchCommandList) is Directory _Directory)
+                currentNode = FindTreeNodeByDirectory(treeView.Nodes, _Directory);
+
+            if (currentNode != null)
+            {
+                // مسیر از ریشه تا گره انتخاب شده را باز کنید
+                TreeNode nodeToExpand = currentNode;
+                while (nodeToExpand != null)
+                {
+                    nodeToExpand.Expand();
+                    nodeToExpand = nodeToExpand.Parent;
+                }
+
+                // همچنین گره را انتخاب کنید
+                treeView.SelectedNode = currentNode;
+                currentNode.EnsureVisible();
+            }
+        }
+        private void KeepOnlyCurrentPathExpanded(System.Windows.Forms.TreeView treeView)
+        {
+            // ابتدا همه گره‌ها را ببندید
+            treeView.CollapseAll();
+
+            // گره مربوط به دایرکتوری جاری را پیدا کنید
+            TreeNode currentNode = FindTreeNodeByDirectory(treeView.Nodes, Fs.CurrentDirectory);
+
+            if (currentNode != null)
+            {
+                // مسیر از ریشه تا گره انتخاب شده را باز کنید
+                TreeNode nodeToExpand = currentNode;
+                while (nodeToExpand != null)
+                {
+                    nodeToExpand.Expand();
+                    nodeToExpand = nodeToExpand.Parent;
+                }
+
+                // همچنین گره را انتخاب کنید
+                treeView.SelectedNode = currentNode;
+                currentNode.EnsureVisible();
+            }
+        }
+
+        private TreeNode FindTreeNodeByDirectory(TreeNodeCollection nodes, Directory directory)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                // اگر گره Tag آن برابر با دایرکتوری باشد
+                if (node.Tag != null && node.Tag == directory)
+                {
+                    return node;
+                }
+
+                // جستجو در فرزندان
+                TreeNode foundNode = FindTreeNodeByDirectory(node.Nodes, directory);
+                if (foundNode != null)
+                {
+                    return foundNode;
+                }
+            }
+
+            return null;
+        }
         private void UpdateTreeView(System.Windows.Forms.TreeView treeview)
         {
             treeview.BeginUpdate();
@@ -591,7 +700,7 @@ namespace VirtualFileSystemSimulatorWinForm
 
             BuildTreeView(Fs.Root, treeview.Nodes);
 
-            treeview.ExpandAll();
+            KeepOnlyCurrentPathExpanded(treeview);
             treeview.EndUpdate();
         }
         public string LastCommands = string.Empty;
