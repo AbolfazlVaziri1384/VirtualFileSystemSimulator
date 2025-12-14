@@ -12,80 +12,79 @@ namespace VirtualFileSystemSimulatorWinForm
 {
     public class Json
     {
-        private readonly string _jsonFolderPath = "VFS_JsonFiles";
-        private readonly string _usersFile = "users.json";
-        private Dictionary<string, User> _users = new Dictionary<string, User>();
+        private readonly string JsonFolderPath = "VFS_JsonFiles";
+        private readonly string UsersFile = "users.json";
+        private Dictionary<string, User> Users = new Dictionary<string, User>();
         public User CurrentUser { get; private set; }
 
         public Json()
         {
-            // ایجاد پوشه VFS_JsonFiles در صورت عدم وجود
-            if (!System.IO.Directory.Exists(_jsonFolderPath))
+            if (!System.IO.Directory.Exists(JsonFolderPath))
             {
-                System.IO.Directory.CreateDirectory(_jsonFolderPath);
+                System.IO.Directory.CreateDirectory(JsonFolderPath);
             }
 
             LoadUsers();
-            if (!_users.ContainsKey("admin"))
+            if (!Users.ContainsKey("admin"))
             {
                 Register("admin", "admin");
             }
         }
 
-        // متد کمکی برای ساخت مسیر کامل فایل
-        private string GetFullPath(string fileName)
+        // For make path with file name
+        private string GetFullPath(string filename)
         {
-            return Path.Combine(_jsonFolderPath, fileName);
+            return Path.Combine(JsonFolderPath, filename);
         }
 
         private void LoadUsers()
         {
-            string fullPath = GetFullPath(_usersFile);
-            if (System.IO.File.Exists(fullPath))
+            string _FullPath = GetFullPath(UsersFile);
+            if (System.IO.File.Exists(_FullPath))
             {
-                var json = System.IO.File.ReadAllText(fullPath);
-                var usersList = JsonSerializer.Deserialize<List<User>>(json);
-                foreach (var user in usersList)
+                var _Json = System.IO.File.ReadAllText(_FullPath);
+                var _UsersList = JsonSerializer.Deserialize<List<User>>(_Json);
+                foreach (var user in _UsersList)
                 {
-                    _users[user.Username] = user;
+                    Users[user.Username] = user;
                 }
             }
         }
 
         private void SaveUsers()
         {
-            var json = JsonSerializer.Serialize(_users.Values.ToList());
-            string fullPath = GetFullPath(_usersFile);
+            var json = JsonSerializer.Serialize(Users.Values.ToList());
+            string fullPath = GetFullPath(UsersFile);
             System.IO.File.WriteAllText(fullPath, json);
         }
 
         public bool UserIsExist(string username)
         {
-            if (_users.ContainsKey(username))
+            if (Users.ContainsKey(username))
             {
-                return true; // کاربر وجود دارد
+                return true;
             }
             else
             { return false; }
         }
         public bool Register(string username, string password)
         {
-            if (_users.ContainsKey(username))
+            if (Users.ContainsKey(username))
             {
-                return false; // کاربر وجود دارد
+                return false;
             }
             using (SHA256 sha256 = SHA256.Create())
             {
                 var passwordHash = BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(password))).Replace("-", "");
                 var newUser = new User(username, passwordHash);
-                _users[username] = newUser;
+                Users[username] = newUser;
                 SaveUsers();
                 return true;
             }
         }
         public bool Login(string username, string password)
         {
-            if (_users.TryGetValue(username, out var user))
+            if (Users.TryGetValue(username, out var user))
             {
                 using (SHA256 sha256 = SHA256.Create())
                 {
@@ -102,13 +101,13 @@ namespace VirtualFileSystemSimulatorWinForm
         public bool ChangeUserType(string username, User.UserTypeEnum newusertype)
         {
             bool _IsDone = false;
-            if (_users.ContainsKey(username))
+            if (Users.ContainsKey(username))
             {
-                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count(), 2];
-                for (int i = 0; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                string[,] _UsersAdnGroups = new string[Users[username].Groups.Split('/').ToList().Count(), 2];
+                for (int i = 0; i < Users[username].Groups.Split('/').ToList().Count(); i++)
                 {
-                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
-                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[1];
+                    _UsersAdnGroups[i, 0] = Users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = Users[username].Groups.Split('/')[i].Split(',')[1];
                 }
 
                 for (int i = 0; i < _UsersAdnGroups.GetLength(0); i++)
@@ -126,21 +125,21 @@ namespace VirtualFileSystemSimulatorWinForm
                     _Upadte.Add(_UsersAdnGroups[i, 0] + ',' + _UsersAdnGroups[i, 1]);
                 }
 
-                _users[username].Groups = string.Join("/", _Upadte);
+                Users[username].Groups = string.Join("/", _Upadte);
                 SaveUsers();
             }
             return _IsDone;
         }
         public void AddToCurrentGroup(string username, User.UserTypeEnum newusertype)
         {
-            if (_users.ContainsKey(username))
+            if (Users.ContainsKey(username))
             {
-                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count() + 1, 2];
+                string[,] _UsersAdnGroups = new string[Users[username].Groups.Split('/').ToList().Count() + 1, 2];
                 int i = 0;
-                for (; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                for (; i < Users[username].Groups.Split('/').ToList().Count(); i++)
                 {
-                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
-                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 0] = Users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = Users[username].Groups.Split('/')[i].Split(',')[0];
                 }
                 _UsersAdnGroups[i, 0] = CurrentUser.Username;
                 int temp = (int)newusertype;
@@ -151,22 +150,22 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     _Upadte.Add(_UsersAdnGroups[j, 0] + ',' + _UsersAdnGroups[j, 1]);
                 }
-                _users[username].Groups = string.Join("/", _Upadte);
+                Users[username].Groups = string.Join("/", _Upadte);
                 SaveUsers();
             }
         }
         public bool RemoveGroup(string username, string groupname)
         {
             bool _IsDone = false;
-            if (_users.ContainsKey(username))
+            if (Users.ContainsKey(username))
             {
                 groupname = groupname.ToLower();
 
-                string[,] _UsersAdnGroups = new string[_users[username].Groups.Split('/').ToList().Count(), 2];
-                for (int i = 0; i < _users[username].Groups.Split('/').ToList().Count(); i++)
+                string[,] _UsersAdnGroups = new string[Users[username].Groups.Split('/').ToList().Count(), 2];
+                for (int i = 0; i < Users[username].Groups.Split('/').ToList().Count(); i++)
                 {
-                    _UsersAdnGroups[i, 0] = _users[username].Groups.Split('/')[i].Split(',')[0];
-                    _UsersAdnGroups[i, 1] = _users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 0] = Users[username].Groups.Split('/')[i].Split(',')[0];
+                    _UsersAdnGroups[i, 1] = Users[username].Groups.Split('/')[i].Split(',')[0];
                 }
 
                 List<string> _Upadte = new List<string>();
@@ -175,20 +174,18 @@ namespace VirtualFileSystemSimulatorWinForm
                     if (_UsersAdnGroups[j, 1] == groupname) { _IsDone = true; continue; }
                     _Upadte.Add(_UsersAdnGroups[j, 0] + ',' + _UsersAdnGroups[j, 1]);
                 }
-                _users[username].Groups = string.Join("/", _Upadte);
+                Users[username].Groups = string.Join("/", _Upadte);
                 SaveUsers();
             }
             return _IsDone;
         }
 
-        // لود VFS برای کاربر جاری (فایل جداگانه برای هر کاربر)
         public Node LoadVfsForCurrentUser(string systemname, string commitversion)
         {
             if (CurrentUser == null) return null;
             string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
             string fullPath = GetFullPath(userVfsFile);
 
-            // اگر فایل وجود نداشت، VFS جدید ایجاد کن
             if (!System.IO.File.Exists(fullPath))
                 return new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
 
@@ -199,7 +196,6 @@ namespace VirtualFileSystemSimulatorWinForm
             return Node.FromDict(data);
         }
 
-        // ذخیره VFS برای کاربر جاری
         public void SaveVfsForCurrentUser(Node root, string systemname, string commitversion)
         {
             if (CurrentUser == null) return;
@@ -207,10 +203,8 @@ namespace VirtualFileSystemSimulatorWinForm
             string userVfsFile = $"vfs_{systemname}_{commitversion}.json";
             string fullPath = GetFullPath(userVfsFile);
 
-            // ساخت دیکشنری از Nodeها
             var data = root.ToDictBase();
 
-            // Serialize با WriteIndented تا خوانا باشد
             var jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 
             System.IO.File.WriteAllText(fullPath, jsonData);
@@ -224,10 +218,8 @@ namespace VirtualFileSystemSimulatorWinForm
             string _SourceFile = GetFullPath($"vfs_{systemname}_{sourcecommit}.json");
             string _DestinationFile = GetFullPath($"vfs_{systemname}_{newcommit}.json");
 
-            // بررسی وجود فایل مبدأ
             if (!System.IO.File.Exists(_SourceFile))
             {
-                // اگر فایل مبدأ وجود نداشت، یک VFS جدید ایجاد کن
                 var newRoot = new Directory("/", null, null, "rwxr-xr-x", CurrentUser.Username, "admin");
                 SaveVfsForCurrentUser(newRoot, systemname, newcommit);
                 return true;
@@ -235,18 +227,12 @@ namespace VirtualFileSystemSimulatorWinForm
 
             try
             {
-                // کپی کردن فایل
                 System.IO.File.Copy(_SourceFile, _DestinationFile, overwrite: true);
-
-                // (اختیاری) می‌توانید اطلاعات کامیت را در فایل ذخیره کنید
-                // AddCommitInfoToFile(destinationFile, newCommit);
 
                 return true;
             }
             catch (Exception ex)
             {
-                // در اینجا می‌توانید خطا را لاگ کنید
-                Console.WriteLine($"خطا در کپی فایل: {ex.Message}");
                 return false;
             }
         }
@@ -258,7 +244,7 @@ namespace VirtualFileSystemSimulatorWinForm
             try
             {
                 string searchPattern = $"vfs_{systemname}_*.json";
-                var files = System.IO.Directory.GetFiles(_jsonFolderPath, searchPattern);
+                var files = System.IO.Directory.GetFiles(JsonFolderPath, searchPattern);
 
                 foreach (var file in files)
                 {
@@ -267,13 +253,13 @@ namespace VirtualFileSystemSimulatorWinForm
 
                     if (parts.Length >= 3)
                     {
-                        commits.Add(parts[2]); // اضافه کردن نام کامیت
+                        commits.Add(parts[2]);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"خطا در خواندن کامیت‌ها: {ex.Message}");
+
             }
 
             return commits;
@@ -295,7 +281,6 @@ namespace VirtualFileSystemSimulatorWinForm
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"خطا در حذف کامیت: {ex.Message}");
                 return false;
             }
         }
