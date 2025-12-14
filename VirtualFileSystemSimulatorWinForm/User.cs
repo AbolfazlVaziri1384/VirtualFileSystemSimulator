@@ -19,17 +19,17 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             Username = username;
             PasswordHash = passwordHash;
-            //همه چون در هنگام ورود وارد صفحه خودشان می شوند پس ادمین ان بخش هستن و نیازی به چک اضافه نیست
+
+            //Everyone enters their own page when they log in, so they are the admins of that section and there is no need for additional checks.
             UserType = 3;
+
             Groups = string.Empty;
         }
-        // چک مجوزها (مثال ساده)
         public bool HasPermission(Node node, string action) // action: "r", "w", "x"
         {
             if (node == null || string.IsNullOrEmpty(node.Permissions))
                 return false;
 
-            // اگر کاربر ادمین است، همیشه اجازه دارد
             if (this.UserType == (int)User.UserTypeEnum.Admin)
                 return true;
 

@@ -25,20 +25,38 @@ namespace VirtualFileSystemSimulatorWinForm
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            Json users = new Json();
-            if (users.Login(txtUsername.Text.Trim(), txtPassword.Text.Trim()))
+            try
             {
-                MessageBox.Show($"Welcome {txtUsername.Text.Trim()}", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                SystemFile fs = new SystemFile(users);
-                fs.UserManager = users;
-                Form1 frm = new Form1();
-                frm.Fs = fs;
-                frm.Show();
-                Hide();
+                Json users = new Json();
+
+                if (users.Login(txtUsername.Text.Trim(), txtPassword.Text.Trim()))
+                {
+                    MessageBox.Show($"Welcome, {txtUsername.Text.Trim()}! Login successful.",
+                                   "Welcome",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Information);
+
+                    SystemFile fs = new SystemFile(users);
+                    fs.UserManager = users;
+                    Form1 frm = new Form1();
+                    frm.Fs = fs;
+                    frm.Show();
+                    Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Invalid username or password. Please try again.",
+                                   "Login Failed",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Username or Password is wrong", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Login error: {ex.Message}",
+                               "Error",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Error);
             }
         }
 

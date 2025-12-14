@@ -13,14 +13,38 @@ public class Directory : Node
         Children = new List<Node>();
     }
     // Add child
-    public void AddChild(Node child) { Children.Add(child); }
+    public void AddChild(Node child)
+    {
+        Children.Add(child);
+    }
     //Find child by Name
-    public Node FindChild(string name) { return Children.FirstOrDefault(child => child.Name == name); }
+    public Node FindChild(string name)
+    {
+        return Children.FirstOrDefault(child => child.Name == name);
+    }
     // Count of node's child
-    public int CountChild() { return Children.Count; }
-    public bool IsExistChildName(string name) { return Children.Any(child => child.Name == name); }
-    public bool HasChild() { return Children.Count != 0; }
-    public bool RemoveChild(string name) { var child = FindChild(name); if (child != null) { Children.Remove(child); return true; } return false; }
+    public int CountChild()
+    {
+        return Children.Count;
+    }
+    public bool IsExistChildName(string name)
+    {
+        return Children.Any(child => child.Name == name);
+    }
+    public bool HasChild()
+    {
+        return Children.Count != 0;
+    }
+    public bool RemoveChild(string name)
+    {
+        var child = FindChild(name);
+        if (child != null)
+        {
+            Children.Remove(child);
+            return true;
+        }
+        return false;
+    }
     public override Dictionary<string, object> ToDictBase()
     {
         var dict = base.ToDictBase();

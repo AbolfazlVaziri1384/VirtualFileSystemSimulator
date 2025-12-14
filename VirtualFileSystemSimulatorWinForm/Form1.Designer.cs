@@ -45,7 +45,7 @@
             this.rchCommandList.Margin = new System.Windows.Forms.Padding(4);
             this.rchCommandList.Name = "rchCommandList";
             this.rchCommandList.ReadOnly = true;
-            this.rchCommandList.Size = new System.Drawing.Size(548, 416);
+            this.rchCommandList.Size = new System.Drawing.Size(548, 516);
             this.rchCommandList.TabIndex = 9;
             this.rchCommandList.Text = "";
             // 
@@ -54,7 +54,7 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 19.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.BlueViolet;
-            this.label1.Location = new System.Drawing.Point(439, 471);
+            this.label1.Location = new System.Drawing.Point(439, 569);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(36, 38);
@@ -66,12 +66,12 @@
             this.TreeView.Location = new System.Drawing.Point(15, 16);
             this.TreeView.Margin = new System.Windows.Forms.Padding(4);
             this.TreeView.Name = "TreeView";
-            this.TreeView.Size = new System.Drawing.Size(416, 492);
+            this.TreeView.Size = new System.Drawing.Size(416, 586);
             this.TreeView.TabIndex = 5;
             // 
             // txtCommandLine
             // 
-            this.txtCommandLine.Location = new System.Drawing.Point(475, 476);
+            this.txtCommandLine.Location = new System.Drawing.Point(475, 574);
             this.txtCommandLine.Margin = new System.Windows.Forms.Padding(4);
             this.txtCommandLine.Name = "txtCommandLine";
             this.txtCommandLine.Size = new System.Drawing.Size(512, 28);
@@ -101,7 +101,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 22F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1000, 520);
+            this.ClientSize = new System.Drawing.Size(1006, 615);
             this.Controls.Add(this.txtCurrentRoute);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtCommandLine);
@@ -111,7 +111,9 @@
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Virtual File System Simulator";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);

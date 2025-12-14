@@ -5,7 +5,7 @@ public class File : Node
     public string Content { get; set; }
     public string FileType { get; set; }
     public bool IsLink { get; set; }
-    public string Link { get; set; } // مسیر لینک به صورت رشته
+    public string Link { get; set; } 
 
     public File(string name, Node parent = null, string timestamp = null,
                 string permissions = "rw-r--r--", string owner = "admin", string group = "admin",
