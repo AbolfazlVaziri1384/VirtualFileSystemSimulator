@@ -44,14 +44,34 @@ namespace VirtualFileSystemSimulatorWinForm
         }
 
         // For Check Input Length
-        public bool CheckLength(string[] input , int Down , int Up , RichTextBox rchCommandList)
+        public bool CheckLength(string[] input, int Down, int Up, RichTextBox rchCommandList)
         {
-            if (input.Length < Down || input.Length > Up)
+            try
             {
-                AddToCommandList("Syntax Error", rchCommandList, false);
+                if (input.Length < Down || input.Length > Up)
+                {
+                    if (input.Length < Down)
+                    {
+                        AddToCommandList($"Syntax Error: Too few arguments.", rchCommandList, false);
+                    }
+                    else if (input.Length > Up)
+                    {
+                        AddToCommandList($"Syntax Error: Too many arguments.", rchCommandList, false);
+                    }
+                    else
+                    {
+                        AddToCommandList($"Syntax Error: Invalid number of arguments.", rchCommandList, false);
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AddToCommandList($"Error validating command syntax: {ex.Message}. Please try again with proper format.", rchCommandList, false);
                 return false;
             }
-            return true;
         }
     }
 }
