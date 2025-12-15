@@ -30,9 +30,32 @@ namespace VirtualFileSystemSimulatorWinForm
             DateTime dateTime = DateTime.Now;
             var CommandList = new List<string> 
             { "mkdir",
-              "mkdir -p",
               "touch",
-             $"touch -t {dateTime:yyyy-MM-dd HH:mm}"};
+             $"touch -t {dateTime:yyyy-MM-dd HH:mm}",
+              "ls",
+              "cd",
+              "pwd",
+              "rm",
+              "usertype",
+              "changeusertype",
+              "tree",
+              "ln",
+              "stat",
+              "echo",
+              "cat",
+              "mv",
+              "cp",
+              "load",
+              "addgroup",
+              "rmgroup",
+              "systemfile",
+              "find",
+              "chmod",
+              "revert",
+              "commit",
+              "open",
+              "close",
+            };
             foreach (string s in CommandList)
             {
                 if (s.Contains(txtCommandLine.Text))
