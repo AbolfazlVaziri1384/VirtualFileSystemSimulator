@@ -75,7 +75,7 @@
             this.txtCommandLine.Margin = new System.Windows.Forms.Padding(4);
             this.txtCommandLine.Name = "txtCommandLine";
             this.txtCommandLine.Size = new System.Drawing.Size(512, 28);
-            this.txtCommandLine.TabIndex = 10;
+            this.txtCommandLine.TabIndex = 0;
             this.txtCommandLine.TextChanged += new System.EventHandler(this.txtCommandLine_TextChanged);
             this.txtCommandLine.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtCommandLine_KeyDown);
             // 
