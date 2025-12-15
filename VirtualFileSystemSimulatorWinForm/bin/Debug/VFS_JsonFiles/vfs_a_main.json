@@ -47,6 +47,18 @@
               "link": null
             }
           ]
+        },
+        {
+          "name": "file2",
+          "timestamp": "2025-12-15 05:30",
+          "permissions": "---------",
+          "owner": "a",
+          "group": "admin",
+          "is_dir": false,
+          "content": "",
+          "file_type": "txt",
+          "is_link": false,
+          "link": null
         }
       ]
     },
@@ -140,12 +152,25 @@
     },
     {
       "name": "test",
-      "timestamp": "2025-12-14 21:22",
-      "permissions": "rwxr-xr-x",
+      "timestamp": "2025-12-15 05:29",
+      "permissions": "---------",
       "owner": "a",
       "group": "admin",
       "is_dir": true,
-      "children": []
+      "children": [
+        {
+          "name": "file2",
+          "timestamp": "2025-12-15 05:30",
+          "permissions": "---------",
+          "owner": "a",
+          "group": "admin",
+          "is_dir": false,
+          "content": "",
+          "file_type": "txt",
+          "is_link": false,
+          "link": null
+        }
+      ]
     }
   ]
 }

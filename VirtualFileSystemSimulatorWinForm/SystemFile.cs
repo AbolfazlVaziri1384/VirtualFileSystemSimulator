@@ -97,19 +97,19 @@ namespace VirtualFileSystemSimulatorWinForm
 
                             switch (_UsersAdnGroups[i, 1])
                             {
-                                case "owner":
+                                case "0":
                                     UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Owner;
                                     Feature.AddToCommandList($"Access granted as Owner to system file '{SystemName}'.", rchCommandLine, false);
                                     break;
-                                case "group":
+                                case "1":
                                     UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Group;
                                     Feature.AddToCommandList($"Access granted as Group member to system file '{SystemName}'.", rchCommandLine, false);
                                     break;
-                                case "other":
+                                case "2":
                                     UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Others;
                                     Feature.AddToCommandList($"Access granted with Others permission to system file '{SystemName}'.", rchCommandLine, false);
                                     break;
-                                case "admin":
+                                case "3":
                                     UserManager.CurrentUser.UserType = (int)User.UserTypeEnum.Admin;
                                     Feature.AddToCommandList($"Access granted as Administrator to system file '{SystemName}'.", rchCommandLine, false);
                                     break;
@@ -311,7 +311,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
 
                 Save();
-                Feature.AddToCommandList($"Directory creation process completed for path: '{path}'.", rchCommandLine, false);
             }
             catch (Exception ex)
             {
@@ -887,6 +886,12 @@ namespace VirtualFileSystemSimulatorWinForm
 
                 try
                 {
+                    if (!UserManager.CurrentUser.HasPermission(_ParentDirectory, "r"))
+                    {
+                        Feature.AddToCommandList($"Permission denied: You do not have read permission.", rchCommandLine, false);
+                        return null;
+                    }
+
                     string _FilesOrFolders = "";
                     var _SortedChildren = _ParentDirectory.Children.OrderBy(c => c.Name).ToList();
 
@@ -943,11 +948,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
                     summary += $" ({directoryCount} directories, {fileCount} files)";
 
-                    if (hiddenCount > 0 && !showhidden)
-                    {
-                        summary += $". Use -a flag to show {hiddenCount} hidden items.";
-                    }
-
                     Feature.AddToCommandList(summary, rchCommandLine, false);
 
                     // Add newline if not in moreinfo mode
@@ -980,6 +980,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     if (CurrentDirectory.Parent != null)
                     {
+                        if (!UserManager.CurrentUser.HasPermission(CurrentDirectory.Parent, "x"))
+                        {
+                            Feature.AddToCommandList($"Permission denied: You do not have execute permission.", rchCommandLine, false);
+                            return;
+                        }
                         CurrentDirectory = (Directory)CurrentDirectory.Parent;
                         Feature.AddToCommandList($"Changed to parent directory: {CurrentDirectory.Name}", rchCommandLine, false);
                     }
@@ -990,6 +995,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
                 else if (path == null || path == "/")
                 {
+                    if (!UserManager.CurrentUser.HasPermission(Root, "x"))
+                    {
+                        Feature.AddToCommandList($"Permission denied: You do not have execute permission.", rchCommandLine, false);
+                        return;
+                    }
                     CurrentDirectory = Root;
                     Feature.AddToCommandList($"Changed to root directory: {Root.Name}", rchCommandLine, false);
                 }
@@ -1000,6 +1010,11 @@ namespace VirtualFileSystemSimulatorWinForm
                     var _DirectoryNode = ResolvePath(path, rchCommandLine);
                     if (_DirectoryNode is Directory directory)
                     {
+                        if (!UserManager.CurrentUser.HasPermission(directory, "x"))
+                        {
+                            Feature.AddToCommandList($"Permission denied: You do not have execute permission.", rchCommandLine, false);
+                            return;
+                        }
                         CurrentDirectory = directory;
                         Feature.AddToCommandList($"Changed directory to: {CurrentDirectory.Name}", rchCommandLine, false);
                     }
@@ -2242,6 +2257,12 @@ namespace VirtualFileSystemSimulatorWinForm
                                         _PermissionChars[5] = '-';
                                         Feature.AddToCommandList($"  Group permissions: --- (default, no digit provided)", rchCommandLine, false);
                                         break;
+                                    case 2: // Owner - default to no permissions
+                                        _PermissionChars[0] = '-';
+                                        _PermissionChars[1] = '-';
+                                        _PermissionChars[2] = '-';
+                                        Feature.AddToCommandList($"  Owner permissions: --- (default, no digit provided)", rchCommandLine, false);
+                                        break;
                                 }
                                 position++;
                             }
@@ -2279,7 +2300,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     try
                     {
                         Save();
-                        Feature.AddToCommandList("Permission changes saved successfully.", rchCommandLine, false);
                     }
                     catch (Exception ex)
                     {
@@ -2704,7 +2724,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     return;
                 }
 
-                Feature.AddToCommandList($"Reverting to commit: {commitrevert}...", rchCommandLine, false);
                 LoadAnotherSystemFile(SystemName, commitrevert, rchCommandLine);
                 Feature.AddToCommandList($"Successfully reverted to commit '{commitrevert}'.", rchCommandLine, false);
             }

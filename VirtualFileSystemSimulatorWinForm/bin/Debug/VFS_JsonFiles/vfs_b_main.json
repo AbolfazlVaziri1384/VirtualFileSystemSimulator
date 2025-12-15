@@ -1,0 +1,19 @@
+{
+  "name": "/",
+  "timestamp": "2025-12-15 05:40",
+  "permissions": "rwxr-xr-x",
+  "owner": "b",
+  "group": "admin",
+  "is_dir": true,
+  "children": [
+    {
+      "name": "allli",
+      "timestamp": "2025-12-15 05:41",
+      "permissions": "rwxr-xr-x",
+      "owner": "b",
+      "group": "admin",
+      "is_dir": true,
+      "children": []
+    }
+  ]
+}

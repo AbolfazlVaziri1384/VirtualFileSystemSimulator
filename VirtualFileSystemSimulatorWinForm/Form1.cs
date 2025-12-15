@@ -244,12 +244,10 @@ namespace VirtualFileSystemSimulatorWinForm
                             Feature.AddToCommandList("Error: Directory name is required when using -p flag. Usage: mkdir -p <directory_name>", commandList, false);
                             return;
                         }
-                        Feature.AddToCommandList($"Creating directory '{inputs[2]}' with parent directories...", commandList, false);
                         Fs.Mkdir(inputs[2], true, commandList);
                     }
                     else
                     {
-                        Feature.AddToCommandList($"Creating directory '{inputs[1]}'...", commandList, false);
                         Fs.Mkdir(inputs[1], false, commandList);
                     }
                 }
@@ -264,7 +262,7 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             try
             {
-                if (Feature.CheckLength(inputs, 2, 3, rchCommandList))
+                if (Feature.CheckLength(inputs, 2, 5, rchCommandList))
                 {
                     if (inputs[1] == "-t")
                     {
@@ -274,12 +272,10 @@ namespace VirtualFileSystemSimulatorWinForm
                             return;
                         }
                         string _DateTime = inputs[2] + " " + inputs[3];
-                        Feature.AddToCommandList($"Creating file '{inputs[4]}' with custom timestamp {_DateTime}...", commandList, false);
                         Fs.Touch(inputs[4], commandList, _DateTime);
                     }
                     else
                     {
-                        Feature.AddToCommandList($"Creating file '{inputs[1]}'...", commandList, false);
                         Fs.Touch(inputs[1], commandList);
                     }
                 }
@@ -305,15 +301,9 @@ namespace VirtualFileSystemSimulatorWinForm
                             return;
                         }
                         _DateTime = inputs[4] + " " + inputs[5];
-                        Feature.AddToCommandList($"Writing content to file '{inputs[2]}' with custom timestamp {_DateTime}...", commandList, false);
-                    }
-                    else
-                    {
-                        Feature.AddToCommandList($"Writing content to file '{inputs[2]}'...", commandList, false);
                     }
 
                     string content = inputs[1].Trim('\"');
-                    Feature.AddToCommandList($"Content length: {content.Length} characters", commandList, false);
                     Fs.Echo(inputs[2], content, Fs.CurrentDirectory, commandList, _DateTime);
                 }
             }
@@ -329,7 +319,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
                 {
-                    Feature.AddToCommandList($"Displaying content of file '{inputs[1]}'...", commandList, false);
                     Fs.Cat(inputs[1], commandList);
                 }
             }
@@ -345,7 +334,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
                 {
-                    Feature.AddToCommandList($"Moving/Renaming '{inputs[1]}' to '{inputs[2]}'...", commandList, false);
                     Fs.Mv(inputs, commandList);
                 }
             }
@@ -361,7 +349,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 3, 3, rchCommandList))
                 {
-                    Feature.AddToCommandList($"Copying '{inputs[1]}' to '{inputs[2]}'...", commandList, false);
                     Fs.Cp(inputs, commandList);
                 }
             }
@@ -379,19 +366,16 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     if (inputs[1] == "-a")
                     {
-                        Feature.AddToCommandList("Expanding all nodes in tree view...", commandList, false);
                         OpenAllTreeView(TreeView);
                         Feature.AddToCommandList("All tree view nodes expanded.", commandList, false);
                     }
                     else if (inputs[1] == "-c")
                     {
-                        Feature.AddToCommandList("Collapsing tree view to current path only...", commandList, false);
                         KeepOnlyCurrentPathExpanded(TreeView);
                         Feature.AddToCommandList("Tree view collapsed to current path.", commandList, false);
                     }
                     else if (!string.IsNullOrEmpty(inputs[1]))
                     {
-                        Feature.AddToCommandList($"Expanding path '{inputs[1]}' in tree view...", commandList, false);
                         KeepOnlyPathExpanded(inputs[1], TreeView);
                         Feature.AddToCommandList($"Path '{inputs[1]}' expanded in tree view.", commandList, false);
                     }
@@ -409,7 +393,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
                 {
-                    Feature.AddToCommandList("Collapsing all nodes in tree view...", commandList, false);
                     CloseAllTreeView(TreeView);
                     Feature.AddToCommandList("Tree view collapsed.", commandList, false);
                 }
@@ -439,7 +422,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
 
                     Fs.LoadAnotherSystemFile(inputs[1], _CommitVersion, commandList);
-                    Feature.AddToCommandList($"System file '{inputs[1]}' loaded successfully.", commandList, false);
                 }
             }
             catch (Exception ex)
@@ -454,9 +436,7 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 2, 2, rchCommandList))
                 {
-                    Feature.AddToCommandList($"Reverting to commit '{inputs[1]}'...", commandList, false);
                     Fs.Revert(inputs[1], commandList);
-                    Feature.AddToCommandList($"Reverted to commit '{inputs[1]}'.", commandList, false);
                 }
             }
             catch (Exception ex)
@@ -477,7 +457,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
                     else if (inputs[1] == "-l")
                     {
-                        Feature.AddToCommandList("Listing all commits...", rchCommandList, false);
                         Fs.CommitList(commandList);
                         return;
                     }
@@ -489,7 +468,6 @@ namespace VirtualFileSystemSimulatorWinForm
                             return;
                         }
                         string commitName = inputs[2].Trim().Trim('"');
-                        Feature.AddToCommandList($"Creating new commit: {commitName}", rchCommandList, false);
                         Fs.Commit(commitName, commandList);
                         return;
                     }
@@ -501,7 +479,6 @@ namespace VirtualFileSystemSimulatorWinForm
                             return;
                         }
                         string commitName = inputs[2].Trim().Trim('"');
-                        Feature.AddToCommandList($"Deleting commit: {commitName}", rchCommandList, false);
                         Fs.DeleteCommit(commitName, commandList);
                         return;
                     }
@@ -531,8 +508,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     string username = inputs[1];
                     string permissionType = inputs[2];
-
-                    Feature.AddToCommandList($"Adding user '{username}' to group with permission '{permissionType}'...", rchCommandList , false);
 
                     switch (permissionType)
                     {
@@ -570,7 +545,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     string _Groupname = inputs[1];
                     string _Username = inputs[2];
 
-                    Feature.AddToCommandList($"Removing user '{_Username}' from group '{_Groupname}'...", rchCommandList, false);
                     Fs.RemoveGroupsForUser(_Groupname, _Username, commandList);
                 }
             }
@@ -607,7 +581,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     string option = inputs[2];
                     string pattern = inputs[3].Trim().Trim('"');
 
-                    Feature.AddToCommandList($"Searching in '{path}' with option '{option}' for pattern '{pattern}'...", rchCommandList, false);
                     Fs.Find(path, option, pattern, commandList);
                 }
             }
@@ -626,7 +599,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     string permission = inputs[1];
                     string target = inputs[2];
 
-                    Feature.AddToCommandList($"Changing permissions of '{target}' to '{permission}'...", rchCommandList, false);
                     Fs.Chmod(permission, target, commandList);
                 }
             }
@@ -650,13 +622,6 @@ namespace VirtualFileSystemSimulatorWinForm
                         if (input.Contains("/"))
                             Path = input;
 
-                    string options = "";
-                    if (MoreInfo) options += "detailed view ";
-                    if (ShowHidden) options += "show hidden ";
-                    if (!string.IsNullOrEmpty(Path)) options += $"path: {Path} ";
-
-                    Feature.AddToCommandList($"Listing directory contents ({options.Trim()})...", rchCommandList, false);
-
                     string result = Fs.Ls(rchCommandList, Path, MoreInfo, ShowHidden);
                     if (!string.IsNullOrEmpty(result))
                     {
@@ -678,13 +643,11 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     if (inputs.Length == 2)
                     {
-                        Feature.AddToCommandList($"Changing directory to '{inputs[1]}'...", rchCommandList, false);
                         Fs.Cd(rchCommandList, inputs[1]);
                     }
                     else
                     {
                         // Go to ROOT
-                        Feature.AddToCommandList("Changing to root directory...", rchCommandList , false);
                         Fs.Cd(rchCommandList);
                     }
                 }
@@ -712,11 +675,6 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
                     Name = inputs[inputs.Length - 1];
 
-                    string options = "";
-                    if (IsRecursive) options += "recursive ";
-                    if (IsForce) options += "force ";
-
-                    Feature.AddToCommandList($"Removing '{Name}' ({options.Trim()})...", rchCommandList, false);
                     Fs.Rm(rchCommandList, Name, IsRecursive, IsForce);
                 }
             }
@@ -734,7 +692,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     string userType = Fs.ShowUserType().ToString();
                     Feature.AddToCommandList($"Current User Type: {userType}", rchCommandList, false);
-                    Feature.AddToCommandList($"Username: {Fs.UserManager.CurrentUser?.Username ?? "Unknown"}", rchCommandList, false);
                 }
             }
             catch (Exception ex)
@@ -751,8 +708,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 {
                     string username = inputs[1];
                     string newType = inputs[2];
-
-                    Feature.AddToCommandList($"Changing user type for '{username}' to '{newType}'...", rchCommandList, false    );
 
                     switch (newType)
                     {
@@ -805,7 +760,6 @@ namespace VirtualFileSystemSimulatorWinForm
                             if (int.TryParse(numberPart, out int tempDeep) && tempDeep > 0)
                             {
                                 deep = tempDeep;
-                                Feature.AddToCommandList($"Setting tree depth limit: {deep} levels", commandList, false);
                             }
                             else
                             {
@@ -816,7 +770,6 @@ namespace VirtualFileSystemSimulatorWinForm
                         else if (!input.StartsWith("-"))
                         {
                             path = input;
-                            Feature.AddToCommandList($"Tree starting from path: {path}", commandList, false);
                         }
                     }
 
@@ -825,7 +778,6 @@ namespace VirtualFileSystemSimulatorWinForm
                         Feature.AddToCommandList($"Tree starting from current directory: {Fs.NodePathToString((Directory)Fs.CurrentDirectory)}", commandList, false);
                     }
 
-                    Feature.AddToCommandList("Generating directory tree...", commandList, false);
                     string treeResult = Fs.Tree(commandList, path, null, "", true, deep, 0);
 
                     if (!string.IsNullOrEmpty(treeResult))
@@ -850,7 +802,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 3, 4, commandList))
                 {
-                    Feature.AddToCommandList("Creating link...", commandList, false     );
                     Fs.Ln(rchCommandList, inputs);
                 }
             }
@@ -867,7 +818,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 if (Feature.CheckLength(inputs, 2, 3, commandList))
                 {
                     string target = inputs[1];
-                    Feature.AddToCommandList($"Getting file information for '{target}'...", commandList , false);
                     Fs.Stat(rchCommandList, inputs);
                 }
             }
@@ -883,7 +833,6 @@ namespace VirtualFileSystemSimulatorWinForm
             {
                 if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
                 {
-                    Feature.AddToCommandList("Getting current directory...", rchCommandList, false);
                     Fs.Pwd(Fs.CurrentDirectory, rchCommandList);
                 }
             }
@@ -1011,7 +960,6 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             try
             {
-                Feature.AddToCommandList("Expanding all nodes in tree view...", rchCommandList, false);
                 treeview.ExpandAll();
                 Feature.AddToCommandList("All tree view nodes expanded successfully.", rchCommandList, false);
             }
@@ -1025,7 +973,6 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             try
             {
-                Feature.AddToCommandList("Collapsing all nodes in tree view...", rchCommandList, false);
                 treeview.CollapseAll();
                 Feature.AddToCommandList("All tree view nodes collapsed successfully.", rchCommandList, false   );
             }
@@ -1039,8 +986,6 @@ namespace VirtualFileSystemSimulatorWinForm
         {
             try
             {
-                Feature.AddToCommandList($"Expanding only path '{path}' in tree view...", rchCommandList , false);
-
                 // First collapse all nodes
                 treeView.CollapseAll();
 
