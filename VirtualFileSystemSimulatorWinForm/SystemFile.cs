@@ -778,7 +778,6 @@ namespace VirtualFileSystemSimulatorWinForm
                 // Check depth
                 if (maxdepth.HasValue && currentdepth == maxdepth.Value)
                 {
-                    Feature.AddToCommandList($"Tree display limited to depth {maxdepth.Value}.", rchCommandLine, false);
                     return _Tree;
                 }
 
@@ -1413,6 +1412,7 @@ namespace VirtualFileSystemSimulatorWinForm
                             Feature.AddToCommandList($"File type: {_File.FileType}", rchCommandLine, false);
                         }
 
+                        Feature.AddToCommandList($"Content: {_File.Content}", rchCommandLine, false);
                         Feature.AddToCommandList($"Size: {_File.Size} bytes", rchCommandLine, false);
                         Feature.AddToCommandList($"Created: {_File.Timestamp}", rchCommandLine, false);
                         Feature.AddToCommandList($"Permissions: {_File.Permissions}", rchCommandLine, false);
@@ -1506,7 +1506,18 @@ namespace VirtualFileSystemSimulatorWinForm
                     }
 
                     Feature.AddToCommandList($"Saving content to file: {name}", rchCommandLine, false);
-                    Touch(_FullPathAndFileName, rchCommandLine, datetime, content);
+
+                    if (currentDirectory.IsExistChildName(name))
+                    {
+                        if (currentDirectory.FindChild(name) is File file)
+                        {
+                            file.Content = content;
+                            Save();
+                            return;
+                        }
+                    }
+                    else
+                        Touch(_FullPathAndFileName, rchCommandLine, datetime, content);
                 }
                 catch (Exception ex)
                 {
