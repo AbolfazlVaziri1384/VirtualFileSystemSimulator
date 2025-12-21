@@ -614,6 +614,20 @@ close
 ```
 **Output**: `Tree view collapsed.`
 
+------
+
+#### 26. `logout` - Log Out of System
+**Syntax**: `logout`
+- Logs out the current user
+- Saves all changes automatically
+- Returns to the login page
+
+**Example**:
+```bash
+logout
+```
+**Output**: `All changes saved. Logging out...`
+
 ---
 
 ## Advanced Usage
