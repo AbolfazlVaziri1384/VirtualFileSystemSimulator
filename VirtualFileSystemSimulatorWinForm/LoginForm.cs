@@ -65,5 +65,10 @@ namespace VirtualFileSystemSimulatorWinForm
             RegisterationForm registerForm = new RegisterationForm();
             registerForm.ShowDialog();
         }
+
+        private void LoginForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
+        }
     }
 }

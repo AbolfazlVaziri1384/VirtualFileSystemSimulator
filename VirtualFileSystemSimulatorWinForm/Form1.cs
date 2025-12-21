@@ -217,6 +217,9 @@ namespace VirtualFileSystemSimulatorWinForm
                 case "close":
                     CloseTreeViewCommand(_InputArray, rchCommandList);
                     break;
+                case "logout":
+                    LogoutCommand(_InputArray, rchCommandList);
+                    break;
                 default:
                     Feature.AddToCommandList("Syntax Error", rchCommandList, false);
                     break;
@@ -230,6 +233,7 @@ namespace VirtualFileSystemSimulatorWinForm
         private void Form1_Load(object sender, EventArgs e)
         {
             UpdateTreeView(TreeView, rchCommandList);
+            Fs.Save();
         }
         public void MkdirCommand(string[] inputs, RichTextBox commandList)
         {
@@ -414,7 +418,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     if (inputs.Length == 3)
                     {
                         _CommitVersion = inputs[2];
-                        Feature.AddToCommandList($"Loading system file '{inputs[1]}' with commit version '{_CommitVersion}'...", commandList , false);
+                        Feature.AddToCommandList($"Loading system file '{inputs[1]}' with commit version '{_CommitVersion}'...", commandList, false);
                     }
                     else
                     {
@@ -841,6 +845,30 @@ namespace VirtualFileSystemSimulatorWinForm
                 Feature.AddToCommandList($"Error in pwd command: {ex.Message}", rchCommandList, false);
             }
         }
+        public async Task LogoutCommand(string[] inputs, RichTextBox commandList)
+        {
+            try
+            {
+                if (Feature.CheckLength(inputs, 1, 1, rchCommandList))
+                {
+                    if (Fs != null)
+                    {
+                        Fs.Save();
+                        Feature.AddToCommandList("All changes saved. Logging out...", commandList, false);
+
+                        await Task.Delay(1000);
+                    }
+
+                    LoginForm frm = new LoginForm();
+                    frm.Show();
+                    Hide();
+                }
+            }
+            catch (Exception ex)
+            {
+                Feature.AddToCommandList($"Error in logout command: {ex.Message}", rchCommandList, false);
+            }
+        }
 
         public static void BuildTreeView(Directory directory, TreeNodeCollection nodes, RichTextBox commandList)
         {
@@ -974,7 +1002,7 @@ namespace VirtualFileSystemSimulatorWinForm
             try
             {
                 treeview.CollapseAll();
-                Feature.AddToCommandList("All tree view nodes collapsed successfully.", rchCommandList, false   );
+                Feature.AddToCommandList("All tree view nodes collapsed successfully.", rchCommandList, false);
             }
             catch (Exception ex)
             {

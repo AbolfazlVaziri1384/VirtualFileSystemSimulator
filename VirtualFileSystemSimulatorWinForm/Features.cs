@@ -55,6 +55,7 @@ namespace VirtualFileSystemSimulatorWinForm
               "commit",
               "open",
               "close",
+              "logout",
             };
             foreach (string s in CommandList)
             {
