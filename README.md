@@ -30,7 +30,7 @@ The file system is stored in JSON files under the `VFS_JsonFiles` directory, wit
 ### Setup Steps
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/VirtualFileSystemSimulator.git
+   git clone https://github.com/AbolfazlVaziri1384/VirtualFileSystemSimulator.git
    cd VirtualFileSystemSimulator
    ```
 
@@ -165,7 +165,7 @@ mkdir ../sibling                   # Relative to parent
 **Examples**:
 ```bash
 touch notes.txt                    # Create empty file
-touch -t "2024-01-01 12:00" old.txt
+touch -t 2024-01-01 12:00 old.txt
 touch ./docs/readme.md             # Relative path
 ```
 

@@ -6,12 +6,13 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VirtualFileSystemSimulatorWinForm;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using VirtualFileSystemSimulatorWinForm;
 
 namespace VirtualFileSystemSimulatorWinForm
 {
@@ -164,7 +165,7 @@ namespace VirtualFileSystemSimulatorWinForm
                     UpdateTreeView(TreeView, rchCommandList);
                     break;
                 case "echo":
-                    EchoCommand(_InputArray, rchCommandList);
+                    EchoCommand(_InputArray, input, rchCommandList);
                     UpdateTreeView(TreeView, rchCommandList);
                     break;
                 case "cat":
@@ -290,26 +291,63 @@ namespace VirtualFileSystemSimulatorWinForm
             }
         }
 
-        public void EchoCommand(string[] inputs, RichTextBox commandList)
+        public void EchoCommand(string[] inputs, string input, RichTextBox commandList)
         {
             try
             {
-                if (Feature.CheckLength(inputs, 3, 6, rchCommandList))
+                int _FirstQuote = input.IndexOf('"');
+                int _LastQuote = input.LastIndexOf('"');
+
+                if (_FirstQuote == -1 || _LastQuote == -1 || _LastQuote <= _FirstQuote)
                 {
-                    string _DateTime = null;
-                    if (inputs.Length > 6 && inputs[3] == "-t")
+                    Feature.AddToCommandList("Error: Content must be enclosed in double quotes.", commandList, false);
+                    return;
+                }
+
+                string _Content = input.Substring(_FirstQuote + 1, _LastQuote - _FirstQuote - 1);
+
+                string _AfterContent = input.Substring(_LastQuote + 1).Trim();
+
+                if (string.IsNullOrWhiteSpace(_AfterContent))
+                {
+                    Feature.AddToCommandList("Error: Filename is required. Usage: echo \"<content>\" <filename> [-t <date> <time>]", commandList, false);
+                    return;
+                }
+
+                string[] _RemainingParts = _AfterContent.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (_RemainingParts.Length == 0)
+                {
+                    Feature.AddToCommandList("Error: Filename is required.", commandList, false);
+                    return;
+                }
+
+                string _FileName = _RemainingParts[0];
+                string _DateTime = null;
+
+                for (int i = 1; i < _RemainingParts.Length; i++)
+                {
+                    if (_RemainingParts[i] == "-t")
                     {
-                        if (inputs.Length < 6)
+                        if (i + 2 < _RemainingParts.Length)
                         {
-                            Feature.AddToCommandList("Error: Insufficient parameters for -t option. Usage: echo <content> <filename> -t <date> <time>", commandList, false);
+                            _DateTime = _RemainingParts[i + 1] + " " + _RemainingParts[i + 2];
+                        }
+                        else
+                        {
+                            Feature.AddToCommandList("Error: Insufficient parameters for -t option. Usage: echo \"<content>\" <filename> -t <date> <time>", commandList, false);
                             return;
                         }
-                        _DateTime = inputs[4] + " " + inputs[5];
+                        break;
                     }
-
-                    string content = inputs[1].Trim('\"');
-                    Fs.Echo(inputs[2], content, Fs.CurrentDirectory, commandList, _DateTime);
+                    else if (i == 1)
+                    {
+                        Feature.AddToCommandList($"Error: Unknown parameter '{_RemainingParts[i]}'. Did you mean '-t'?", commandList, false);
+                        return;
+                    }
                 }
+
+                Fs.Echo(_FileName, _Content, Fs.CurrentDirectory, commandList, _DateTime);
             }
             catch (Exception ex)
             {

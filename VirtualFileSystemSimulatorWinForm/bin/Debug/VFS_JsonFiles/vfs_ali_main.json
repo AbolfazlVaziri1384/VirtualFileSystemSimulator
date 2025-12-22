@@ -1,0 +1,50 @@
+{
+  "name": "/",
+  "timestamp": "2025-12-22 19:49",
+  "permissions": "rwxr-xr-x",
+  "owner": "ali",
+  "group": "admin",
+  "is_dir": true,
+  "children": [
+    {
+      "name": "a",
+      "timestamp": "2025-12-22 20:00",
+      "permissions": "rwxr-xr-x",
+      "owner": "ali",
+      "group": "admin",
+      "is_dir": true,
+      "children": []
+    },
+    {
+      "name": "b",
+      "timestamp": "2025-12-22 20:01",
+      "permissions": "rwxr-xr-x",
+      "owner": "ali",
+      "group": "admin",
+      "is_dir": true,
+      "children": []
+    },
+    {
+      "name": "c",
+      "timestamp": "2025-12-22 20:02",
+      "permissions": "rwxr-xr-x",
+      "owner": "ali",
+      "group": "admin",
+      "is_dir": true,
+      "children": [
+        {
+          "name": "test1",
+          "timestamp": "2025-12-22 20:07",
+          "permissions": "------rwx",
+          "owner": "ali",
+          "group": "admin",
+          "is_dir": false,
+          "content": "Hello ali",
+          "file_type": "pdf",
+          "is_link": false,
+          "link": null
+        }
+      ]
+    }
+  ]
+}

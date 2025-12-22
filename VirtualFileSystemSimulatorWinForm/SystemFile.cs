@@ -1349,10 +1349,14 @@ namespace VirtualFileSystemSimulatorWinForm
                 }
 
                 bool _MoreInfo = false;
-                if (inputs.Length > 2)
-                    _MoreInfo = inputs[2] == "-l";
-
                 string _Path = inputs[1];
+                if (inputs.Length > 2)
+                {
+                    _MoreInfo = inputs.Contains("-l");
+                    _Path = inputs[2];
+                }
+
+
 
                 if (string.IsNullOrEmpty(_Path))
                 {
