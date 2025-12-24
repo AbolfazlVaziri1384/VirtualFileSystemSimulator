@@ -13,7 +13,20 @@
       "owner": "ali",
       "group": "admin",
       "is_dir": true,
-      "children": []
+      "children": [
+        {
+          "name": "temp",
+          "timestamp": "2025-12-23 12:08",
+          "permissions": "rw-r--r--",
+          "owner": "ali",
+          "group": "admin",
+          "is_dir": false,
+          "content": "",
+          "file_type": "txt",
+          "is_link": false,
+          "link": null
+        }
+      ]
     },
     {
       "name": "b",
@@ -45,6 +58,27 @@
           "link": null
         }
       ]
+    },
+    {
+      "name": "te",
+      "timestamp": "2025-12-23 12:01",
+      "permissions": "rwxr-xr-x",
+      "owner": "ali",
+      "group": "admin",
+      "is_dir": true,
+      "children": []
+    },
+    {
+      "name": "a1",
+      "timestamp": "2025-12-24 20:44",
+      "permissions": "rw-r--r--",
+      "owner": "ali",
+      "group": "admin",
+      "is_dir": false,
+      "content": "hello a11",
+      "file_type": "txt",
+      "is_link": false,
+      "link": null
     }
   ]
 }

@@ -3,11 +3,11 @@
   "WorkspaceRootPath": "D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|d:\\university\\lessons\\data_structure\\virtualfilesystemsimulatorwinform\\virtualfilesystemsimulatorwinform\\systemfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\systemfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|d:\\university\\lessons\\data_structure\\virtualfilesystemsimulatorwinform\\virtualfilesystemsimulatorwinform\\models\\systemfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\models\\systemfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|d:\\university\\lessons\\data_structure\\virtualfilesystemsimulatorwinform\\virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DA640A9A-D20C-432F-A320-C432C22CFE9A}|VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm.csproj|solutionrelative:virtualfilesystemsimulatorwinform\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -30,18 +30,17 @@
               "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Form1.cs",
               "ViewState": "AgIAAFEDAAAAAAAAAAAvwF4DAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T16:44:29.235Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-22T16:44:29.235Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "SystemFile.cs",
-              "DocumentMoniker": "D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "RelativeDocumentMoniker": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "ToolTip": "D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\SystemFile.cs",
-              "ViewState": "AgIAAFsFAAAAAAAAAADgv0cFAAAnAAAAAAAAAA==",
+              "DocumentMoniker": "D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\Models\\SystemFile.cs",
+              "RelativeDocumentMoniker": "VirtualFileSystemSimulatorWinForm\\Models\\SystemFile.cs",
+              "ToolTip": "D:\\UNIVERSITY\\Lessons\\Data_Structure\\VirtualFileSystemSimulatorWinForm\\VirtualFileSystemSimulatorWinForm\\Models\\SystemFile.cs",
+              "RelativeToolTip": "VirtualFileSystemSimulatorWinForm\\Models\\SystemFile.cs",
+              "ViewState": "AgIAADoFAAAAAAAAAAAjwEcFAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-22T16:44:11.171Z",
               "EditorCaption": ""
